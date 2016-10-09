@@ -77,8 +77,8 @@ public enum XMLSubscriptResult {
         }
     }
     
-    public var xmlAttributes: [String: String] {
-        return xml?.attributes ?? [:]
+    public var xmlAttributes: [String: String]? {
+        return xml?.attributes
     }
     
     public var xmlList:[XML] {

@@ -77,6 +77,10 @@ public enum XMLSubscriptResult {
         }
     }
     
+    public var xmlAttributes: [String: String] {
+        return xml?.attributes ?? [:]
+    }
+    
     public var xmlList:[XML] {
         switch self {
         case .null(let error):
@@ -203,10 +207,38 @@ open class XML {
 
 // MARK: - String extensions
 
-public extension String {
+public protocol StringProvider {
+    var stringValue: String { get }
+}
+
+extension String : StringProvider {
+    public var stringValue: String {
+        return self
+    }
+}
+
+extension XML : StringProvider {
+    public var stringValue: String {
+        if self.value == nil {
+            log("xml: \(self.name) don't have any value")
+        }
+        return value ?? ""
+    }
+}
+
+extension XMLSubscriptResult : StringProvider {
+    public var stringValue: String {
+        if self.xml?.value == nil {
+            log("xml: \(xml?.name) don't have any value")
+        }
+        return self.xml?.value ?? ""
+    }
+}
+
+extension StringProvider {
     
     public var bool: Bool {
-        return (self as NSString).boolValue
+        return (stringValue as NSString).boolValue
     }
     // unsigned integer
     public var uInt8: UInt8 {
@@ -232,23 +264,23 @@ public extension String {
         return Int16(self.int)
     }
     public var int32: Int32 {
-        return (self as NSString).intValue
+        return (stringValue as NSString).intValue
     }
     public var int64: Int64 {
-        return (self as NSString).longLongValue
+        return (stringValue as NSString).longLongValue
     }
     public var int: Int {
-        return (self as NSString).integerValue
+        return (stringValue as NSString).integerValue
     }
     // decimal
     public var float: Float {
-        return (self as NSString).floatValue
+        return (stringValue as NSString).floatValue
     }
     public var double: Double {
-        return (self as NSString).doubleValue
+        return (stringValue as NSString).doubleValue
     }
-    public var stringValue: String {
-        return self
+    public var string: String {
+        return stringValue
     }
 }
 

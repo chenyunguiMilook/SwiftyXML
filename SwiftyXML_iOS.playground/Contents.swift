@@ -4,17 +4,11 @@ import UIKit
 import SwiftyXML
 
 
-let xml = XML(url: #fileLiteral(resourceName: "food.xml"))
+let xml = XML(url: #fileLiteral(resourceName: "products.xml"))
+print(xml.toXMLString())
 
-for food in xml["food"].xmlList{
-    if let name = food["name"].xml?.value {
-        print(name)
-    }
-}
+let price = xml["product"][0]["catalog_item"][0]["size"][0]["color_swatch"][0].string
 
-if let x = xml["food"][4]["name"].xml?.value {
-    print(x)
-}
 
 let xml1 = XML(name: "hello")
 xml1.addAttribute(name: "name", value: "kevin")
@@ -37,10 +31,6 @@ child.addChild(end1)
 child.addChild(end2)
 
 print(xml1.toXMLString())
-
-
-
-
 
 
 

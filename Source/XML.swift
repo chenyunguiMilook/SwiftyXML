@@ -60,8 +60,9 @@ public enum XMLSubscriptResult {
                 } else {
                     return .null(path + ": no such children named: \"\(key)\"")
                 }
-            case .array(_, let path):
-                return .null(path + ": xml array can not subscript by key")
+            case .array(let xmls, let path):
+                let result = XMLSubscriptResult.xml(xmls[0], path + "[0]")
+                return result[key]
             default: fatalError()
             }
         }
@@ -228,10 +229,16 @@ extension XML : StringProvider {
 
 extension XMLSubscriptResult : StringProvider {
     public var stringValue: String {
-        if self.xml?.value == nil {
-            log("xml: \(xml?.name) don't have any value")
+        if let xml = self.xml {
+            if let value = xml.value {
+                return value
+            } else {
+                log("xml: \(xml.name) don't have any value")
+                return String()
+            }
+        } else {
+            return String()
         }
-        return self.xml?.value ?? ""
     }
 }
 

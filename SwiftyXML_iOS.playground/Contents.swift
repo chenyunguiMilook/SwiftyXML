@@ -7,7 +7,7 @@ import SwiftyXML
 let xml = XML(url: #fileLiteral(resourceName: "products.xml"))
 print(xml.toXMLString())
 
-let price = xml["product"][0]["catalog_item"][0]["size"][0]["color_swatch"][0].string
+let price = xml["product"]["catalog_item"]["size"]["color_swatch"][1].string
 
 
 let xml1 = XML(name: "hello")

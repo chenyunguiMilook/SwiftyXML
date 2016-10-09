@@ -8,29 +8,69 @@ let xml = XML(url: #fileLiteral(resourceName: "products.xml"))
 print(xml.toXMLString())
 
 let price = xml["product"]["catalog_item"]["size"]["color_swatch"][1].string
+let price1 = xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].string
 
+// handle xml
+if let xml = xml["product"]["catalog_item"]["size"]["color_swatch"].xml {
+    if  let color = xml.value?.string,
+        let image = xml.attributes["image"]?.string {
+        print(color)
+        print(image)
+    }
+}
 
-let xml1 = XML(name: "hello")
-xml1.addAttribute(name: "name", value: "kevin")
-let child = XML(name: "world")
-child.addAttribute(name: "time", value: 123)
-child.addAttribute(name: "tim", value: 23)
-let child1 = XML(name: "world")
-child1.addAttribute(name: "time", value: 123)
+// handle xml attributes
+if let attributes = xml["product"]["catalog_item"][1]["size"]["color_swatch"].xmlAttributes {
+    if let image = attributes["image"]?.string {
+        print(image)
+    }
+}
 
-let end = XML(name: "end")
-end.addAttribute(name: "sdf", value: 109)
-let end1 = XML(name: "end")
-let end2 = XML(name: "end")
-end2.value = "my text"
+// handle xml list
+for catalog in xml["product"]["catalog_item"].xmlList {
+    for size in catalog["size"].xmlList {
+        if let description = size.attributes["description"] {
+            print(description)
+        }
+    }
+}
 
-xml1.addChild(child)
-xml1.addChild(child1)
-child.addChild(end)
-child.addChild(end1)
-child.addChild(end2)
+// enable debugger, default is true
+XML.debugEnabled = true
 
-print(xml1.toXMLString())
+public class MyLogger : XMLLogger {
+    
+    public var messages: [String] = []
+    
+    public func log(_ message: String) {
+        messages.append(message)
+    }
+    
+    public func saveLog(to url:URL) {
+        // save out you logger
+    }
+}
+
+let logger = MyLogger()
+XML.debugLogger = logger
+
+// construct xml
+
+let store = XML(name: "store")
+store.addAttribute(name: "description", value: "Ball Store")
+
+let product1 = XML(name: "product")
+product1.addAttribute(name: "name", value: "football")
+product1.addAttribute(name: "weight", value: 0.453)
+
+let product2 = XML(name: "product")
+product2.addAttribute(name: "name", value: "basketball")
+product2.addAttribute(name: "weight", value: 0.654)
+
+store.addChild(product1)
+store.addChild(product2)
+
+print(store.toXMLString())
 
 
 

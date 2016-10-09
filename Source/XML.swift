@@ -33,9 +33,8 @@ public enum XMLSubscriptResult {
     
     public subscript(key: XMLSubscriptKey) -> XMLSubscriptResult {
         
-        switch self {
-        case .null: return self
-        default: break
+        if case XMLSubscriptResult.null(_) = self {
+            return self
         }
         
         switch key {
@@ -68,15 +67,6 @@ public enum XMLSubscriptResult {
         }
     }
     
-    private func log(_ message:String) {
-        guard XML.debugEnabled else { return }
-        if let logger = XML.debugLogger {
-            logger.log(message)
-        } else {
-            print(message)
-        }
-    }
-    
     public var xml:XML? {
         switch self {
         case .null(let error):
@@ -104,7 +94,7 @@ open class XML {
     public static var debugLogger:XMLLogger? = nil
     
     public var name:String
-    public var attributes:[String:Any] = [:]
+    public var attributes:[String: String] = [:]
     public var value:String?
     public internal(set) var children:[XML] = []
     
@@ -112,43 +102,53 @@ open class XML {
     
     public init(name:String, attributes:[String:Any] = [:], value: String? = nil) {
         self.name = name
-        self.attributes = attributes
+        self.addAttributes(attributes)
         self.value = value
     }
     
-    public convenience init(xml: XML) {
+    private convenience init(xml: XML) {
         self.init(name: xml.name, attributes: xml.attributes, value: xml.value)
         self.addChildren(xml.children)
         self.parent = nil
     }
     
-    public convenience init(data: Data) throws {
-        let parser = SimpleXMLParser(data: data)
-        try parser.parse()
-        if let xml = parser.root {
-            self.init(xml: xml)
-        } else {
-            fatalError("xml parser exception")
+    public convenience init(data: Data) {
+        do {
+            let parser = SimpleXMLParser(data: data)
+            try parser.parse()
+            if let xml = parser.root {
+                self.init(xml: xml)
+            } else {
+                fatalError("xml parser exception")
+            }
+        } catch {
+            log(error.localizedDescription)
+            self.init(name: "error")
         }
     }
     
-    public convenience init(url: URL) throws {
-        let data = try Data(contentsOf: url)
-        try self.init(data: data)
+    public convenience init(url: URL) {
+        do {
+            let data = try Data(contentsOf: url)
+            self.init(data: data)
+        } catch {
+            log(error.localizedDescription)
+            self.init(name: "error")
+        }
     }
     
-    public convenience init(named name: String) throws {
+    public convenience init(named name: String) {
         guard let url = Bundle.main.resourceURL?.appendingPathComponent(name) else {
             fatalError("can not get mainBundle URL")
         }
-        try self.init(url: url)
+        self.init(url: url)
     }
     
-    public convenience init(string: String, encoding: String.Encoding = .utf8) throws {
+    public convenience init(string: String, encoding: String.Encoding = .utf8) {
         guard let data = string.data(using: encoding) else {
             fatalError("string encoding failed")
         }
-        try self.init(data: data)
+        self.init(data: data)
     }
     
     public subscript(index: Int) -> XMLSubscriptResult {
@@ -179,12 +179,12 @@ open class XML {
     }
     
     public func addAttribute(name:String, value:Any) {
-        self.attributes[name] = value
+        self.attributes[name] = String(describing: value)
     }
     
     public func addAttributes(_ attributes:[String : Any]) {
         for (key, value) in attributes {
-            self.attributes[key] = value
+            self.addAttribute(name: key, value: value)
         }
     }
     
@@ -198,6 +198,57 @@ open class XML {
     
     public func addChildren(_ xmls: [XML]) {
         xmls.forEach{ self.addChild($0) }
+    }
+}
+
+// MARK: - String extensions
+
+public extension String {
+    
+    public var bool: Bool {
+        return (self as NSString).boolValue
+    }
+    // unsigned integer
+    public var uInt8: UInt8 {
+        return UInt8(self.int)
+    }
+    public var uInt16: UInt16 {
+        return UInt16(self.int)
+    }
+    public var uInt32: UInt32 {
+        return UInt32(self.int64)
+    }
+    public var uInt64: UInt64 {
+        return UInt64(self.int64)
+    }
+    public var uInt: UInt {
+        return UInt(self.int64)
+    }
+    // signed integer
+    public var int8: Int8 {
+        return Int8(self.int)
+    }
+    public var int16: Int16 {
+        return Int16(self.int)
+    }
+    public var int32: Int32 {
+        return (self as NSString).intValue
+    }
+    public var int64: Int64 {
+        return (self as NSString).longLongValue
+    }
+    public var int: Int {
+        return (self as NSString).integerValue
+    }
+    // decimal
+    public var float: Float {
+        return (self as NSString).floatValue
+    }
+    public var double: Double {
+        return (self as NSString).doubleValue
+    }
+    public var stringValue: String {
+        return self
     }
 }
 
@@ -329,5 +380,14 @@ public class SimpleXMLParser: NSObject, XMLParserDelegate {
     
     @objc public func parser(_ parser: XMLParser, parseErrorOccurred parseError: Swift.Error) {
         self.parseError = parseError
+    }
+}
+
+fileprivate func log(_ message:String) {
+    guard XML.debugEnabled else { return }
+    if let logger = XML.debugLogger {
+        logger.log("[SwiftyXML]:" + message)
+    } else {
+        print("[SwiftyXML]:" + message)
     }
 }

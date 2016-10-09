@@ -85,7 +85,7 @@ let package = Package(
 import SwiftyXML
 ```
 ```swift
-let xml = JSON(data: xmlFileData)
+let xml = XML(data: xmlFileData)
 ```
 ####Access XML
 ```swift

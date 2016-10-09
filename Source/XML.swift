@@ -17,6 +17,8 @@ public enum XMLSubscriptKey {
     case key(String)
 }
 
+// TODO: subscript setter 
+
 public enum XMLSubscriptResult {
 
     case null(String)         // means: null(error: String)
@@ -209,17 +211,17 @@ open class XML {
 // MARK: - String extensions
 
 public protocol StringProvider {
-    var stringValue: String { get }
+    var stringSource: String { get }
 }
 
 extension String : StringProvider {
-    public var stringValue: String {
+    public var stringSource: String {
         return self
     }
 }
 
 extension XML : StringProvider {
-    public var stringValue: String {
+    public var stringSource: String {
         if self.value == nil {
             log("xml: \(self.name) don't have any value")
         }
@@ -228,7 +230,7 @@ extension XML : StringProvider {
 }
 
 extension XMLSubscriptResult : StringProvider {
-    public var stringValue: String {
+    public var stringSource: String {
         if let xml = self.xml {
             if let value = xml.value {
                 return value
@@ -245,7 +247,7 @@ extension XMLSubscriptResult : StringProvider {
 extension StringProvider {
     
     public var bool: Bool {
-        return (stringValue as NSString).boolValue
+        return (stringSource as NSString).boolValue
     }
     // unsigned integer
     public var uInt8: UInt8 {
@@ -271,23 +273,23 @@ extension StringProvider {
         return Int16(self.int)
     }
     public var int32: Int32 {
-        return (stringValue as NSString).intValue
+        return (stringSource as NSString).intValue
     }
     public var int64: Int64 {
-        return (stringValue as NSString).longLongValue
+        return (stringSource as NSString).longLongValue
     }
     public var int: Int {
-        return (stringValue as NSString).integerValue
+        return (stringSource as NSString).integerValue
     }
     // decimal
     public var float: Float {
-        return (stringValue as NSString).floatValue
+        return (stringSource as NSString).floatValue
     }
     public var double: Double {
-        return (stringValue as NSString).doubleValue
+        return (stringSource as NSString).doubleValue
     }
     public var string: String {
-        return stringValue
+        return stringSource
     }
 }
 

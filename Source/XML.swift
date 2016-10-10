@@ -31,8 +31,6 @@ public enum XMLSubscriptKey {
     case key(String)
 }
 
-// TODO: subscript setter 
-
 public enum XMLSubscriptResult {
 
     case null(String)         // means: null(error: String)
@@ -94,11 +92,15 @@ public enum XMLSubscriptResult {
         }
     }
     
-    public var xmlAttributes: [String: String]? {
+    public var attributes: [String: String]? {
         return xml?.attributes
     }
     
-    public var xmlList:[XML] {
+    public var children:[XML]? {
+        return xml?.children
+    }
+    
+    public var list:[XML] {
         switch self {
         case .null(let error):
             log(error)
@@ -230,7 +232,7 @@ public class XMLSubscriptResultIterator : IteratorProtocol {
     var index:Int = 0
     
     public init(result: XMLSubscriptResult) {
-        self.xmls = result.xmlList
+        self.xmls = result.list
     }
     
     public func next() -> XML? {

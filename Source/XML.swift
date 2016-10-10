@@ -222,6 +222,34 @@ open class XML {
     }
 }
 
+// MARK: - XMLSubscriptResult implements Sequence protocol
+
+public class XMLSubscriptResultIterator : IteratorProtocol {
+    
+    var xmls:[XML]
+    var index:Int = 0
+    
+    public init(result: XMLSubscriptResult) {
+        self.xmls = result.xmlList
+    }
+    
+    public func next() -> XML? {
+        if self.xmls.isEmpty { return nil }
+        if self.index >= self.xmls.endIndex { return nil }
+        defer { index += 1 }
+        return self.xmls[index]
+    }
+}
+
+extension XMLSubscriptResult : Sequence {
+    
+    public typealias Iterator = XMLSubscriptResultIterator
+    
+    public func makeIterator() -> XMLSubscriptResult.Iterator {
+        return XMLSubscriptResultIterator(result: self)
+    }
+}
+
 // MARK: - String extensions
 
 public protocol StringProvider {

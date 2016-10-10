@@ -112,8 +112,8 @@ if let attributes = xml["product"]["catalog_item"][1]["size"]["color_swatch"].xm
 
 ```swift
 // handle xml list
-for catalog in xml["product"]["catalog_item"].xmlList {
-    for size in catalog["size"].xmlList {
+for catalog in xml["product"]["catalog_item"] {
+    for size in catalog["size"] {
         if let description = size.attributes["description"] {
             print(description) //3 times: Medium Large Small
         }

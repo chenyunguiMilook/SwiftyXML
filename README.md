@@ -39,6 +39,7 @@ With SwiftyXML all you have to do is:
 ```swift
 let xml = XML(data: xmlFileData)
 let color = xml["product"]["catalog_item"]["size"]["color_swatch"][1].string //return "Burgundy"
+let price = xml["product"]["catalog_item"]["price"].float // 39.95
 ```
 
 This is same as below, SwiftyXML will auto pick the first element as default: 

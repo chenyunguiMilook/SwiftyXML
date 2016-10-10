@@ -7,8 +7,9 @@ import SwiftyXML
 let xml = XML(url: #fileLiteral(resourceName: "products.xml"))
 print(xml.toXMLString())
 
-let price = xml["product"]["catalog_item"]["size"]["color_swatch"][1].string
-let price1 = xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].string
+let color = xml["product"]["catalog_item"]["size"]["color_swatch"][1].string
+let price = xml["product"]["catalog_item"]["price"].float
+let color1 = xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].string
 
 // handle xml
 if let xml = xml["product"]["catalog_item"]["size"]["color_swatch"].xml {

@@ -21,10 +21,9 @@ if let xml = xml["product"]["catalog_item"]["size"]["color_swatch"].xml {
 }
 
 // handle xml attributes
-if let attributes = xml["product"]["catalog_item"][1]["size"]["color_swatch"].attributes {
-    if let image = attributes["image"]?.string {
-        print(image)
-    }
+let attributes = xml["product"]["catalog_item"][1]["size"]["color_swatch"].attributes
+if let image = attributes["image"]?.string {
+    print(image)
 }
 
 // handle xml list

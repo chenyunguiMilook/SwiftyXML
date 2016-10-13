@@ -92,12 +92,12 @@ public enum XMLSubscriptResult {
         }
     }
     
-    public var attributes: [String: String]? {
-        return xml?.attributes
+    public var attributes: [String: String] {
+        return xml?.attributes ?? [:]
     }
     
-    public var children:[XML]? {
-        return xml?.children
+    public var children:[XML] {
+        return xml?.children ?? []
     }
     
     public var list:[XML] {

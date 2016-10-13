@@ -26,6 +26,10 @@ if let image = attributes["image"]?.string {
     print(image)
 }
 
+// or non optional result
+let image = xml["product"]["catalog_item"][1]["size"]["color_swatch"].getAttribute("image")
+
+
 // handle xml list
 for catalog in xml["product"]["catalog_item"] {
     for size in catalog["size"] {

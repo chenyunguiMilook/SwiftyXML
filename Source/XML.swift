@@ -96,6 +96,10 @@ public enum XMLSubscriptResult {
         return xml?.attributes ?? [:]
     }
     
+    public func getAttribute(_ name: String) -> String {
+        return xml?.attributes[name] ?? ""
+    }
+    
     public var children:[XML] {
         return xml?.children ?? []
     }

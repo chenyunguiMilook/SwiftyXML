@@ -107,6 +107,9 @@ let attributes = xml["product"]["catalog_item"][1]["size"]["color_swatch"].attri
 if let image = attributes["image"]?.string {
     print(image) // "red_cardigan.jpg\n"
 }
+
+// or non optional result
+let image = xml["product"]["catalog_item"][1]["size"]["color_swatch"].getAttribute("image")
 ```
 #### Access XML List
 

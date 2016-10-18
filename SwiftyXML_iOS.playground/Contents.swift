@@ -27,7 +27,7 @@ if let image = attributes["image"]?.string {
 }
 
 // or non optional result
-let image = xml["product"]["catalog_item"][1]["size"]["color_swatch"].getAttribute("image")
+let image = xml["product"]["catalog_item"][1]["size"]["color_swatch"].attribute(of: "image")
 
 
 // handle xml list

@@ -96,7 +96,10 @@ public enum XMLSubscriptResult {
         return xml?.attributes ?? [:]
     }
     
-    public func getAttribute(_ name: String) -> String {
+    @available(*, unavailable, renamed:"XMLSubscriptResult.attribute(of:)")
+    public func getAttribute(_ name: String) -> String { fatalError() }
+    
+    public func attribute(of name: String) -> String {
         return xml?.attributes[name] ?? ""
     }
     
@@ -225,6 +228,10 @@ open class XML {
     
     public func addChildren(_ xmls: [XML]) {
         xmls.forEach{ self.addChild($0) }
+    }
+    
+    public func attribute(of name: String) -> String {
+        return self.attributes[name] ?? ""
     }
 }
 

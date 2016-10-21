@@ -301,6 +301,21 @@ extension XMLSubscriptResult : StringProvider {
 
 extension StringProvider {
     
+    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == String { return T(rawValue: self.string) }
+    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == UInt8  { return T(rawValue: self.uInt8)  }
+    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == UInt16 { return T(rawValue: self.uInt16) }
+    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == UInt32 { return T(rawValue: self.uInt32) }
+    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == UInt64 { return T(rawValue: self.uInt64) }
+    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == UInt   { return T(rawValue: self.uInt)   }
+    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == Int8   { return T(rawValue: self.int8)   }
+    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == Int16  { return T(rawValue: self.int16)  }
+    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == Int32  { return T(rawValue: self.int32)  }
+    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == Int64  { return T(rawValue: self.int64)  }
+    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == Int    { return T(rawValue: self.int)    }
+}
+
+extension StringProvider {
+    
     public var bool: Bool {
         return (stringSource as NSString).boolValue
     }

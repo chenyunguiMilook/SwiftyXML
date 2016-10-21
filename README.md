@@ -123,7 +123,18 @@ for catalog in xml["product"]["catalog_item"] {
     }
 }
 ```
+#### Read Enums
+
+```Swift
+// read enum value
+public enum Color : String {
+    case Red, Navy, Burgundy
+}
+let c: Color = xml["product"]["catalog_item"]["size"]["color_swatch"].value() //Red
+```
+
 ####Debugging
+
 ```swift
 // enable debugger, default is true
 XML.debugEnabled = true

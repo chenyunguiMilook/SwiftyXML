@@ -149,6 +149,29 @@ public enum XMLSubscriptResult {
     }
 }
 
+struct AttributeChain {
+    
+    var pathComponents: [String] = []
+    var attribute: String?
+    
+    init?(string: String) {
+        guard !string.isEmpty else { return nil }
+        let strings = string.components(separatedBy: ".").filter{ !$0.isEmpty }
+        for (i, str) in strings.enumerated() {
+            if str.hasPrefix("@") {
+                if i == strings.count - 1 {
+                    let index = str.index(str.startIndex, offsetBy: 1)
+                    self.attribute = str.substring(from: index)
+                } else {
+                    return nil
+                }
+            } else {
+                self.pathComponents.append(str)
+            }
+        }
+    }
+}
+
 open class XML {
     
     public static var debugEnabled = true
@@ -237,6 +260,38 @@ open class XML {
                 return .null("no such children named: \"\(key)\"")
             }
         }
+    }
+    
+    /// get attribute using single connected string
+    ///
+    /// - Parameter chain: the format should like this "blendMode.@name" or "@name", use ".@" means get attribute, use "." means get child node
+    public subscript(chain chain: String) -> String {
+        if let aChain = AttributeChain(string: chain) {
+            var result: XMLSubscriptResult?
+            for (i, path) in aChain.pathComponents.enumerated() {
+                if i == 0 {
+                    result = self[path]
+                } else {
+                    result = result![path]
+                }
+            }
+            if result != nil {
+                if let attr = aChain.attribute {
+                    return result!.attribute(of: attr)
+                } else {
+                    return result!.string
+                }
+            } else {
+                if let attr = aChain.attribute {
+                    return self.attribute(of: attr)
+                } else {
+                    return self.value ?? ""
+                }
+            }
+        } else {
+            print("wrong chain format: \(chain)")
+        }
+        return ""
     }
     
     public func addAttribute(name:String, value:Any) {

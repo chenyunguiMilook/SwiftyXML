@@ -100,7 +100,15 @@ if let xml = xml["product"]["catalog_item"]["size"]["color_swatch"].xml {
 }
 ```
 
-####Print out the error
+####Access XML use attribute chain
+
+```swift
+// attribute chain
+xml[chain: "product.catalog_item.size.color_swatch.@image"] //"red_cardigan.jpg"
+xml[chain: "product.@description"] //"Cardigan Sweater"
+```
+
+#### Print out the error
 
 ```swift
 if let color1 = xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].xml {

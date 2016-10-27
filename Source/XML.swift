@@ -265,11 +265,11 @@ open class XML {
     /// get attribute using single connected string
     ///
     /// - Parameter chain: the format should like this "blendMode.@name" or "@name", use ".@" means get attribute, use "." means get child node
-    public func attributeByChain(_ chain: String) -> String {
+    public func attributeByChain(_ chain: String) -> String? {
         do {
             return try getAttributeByChain(chain)
         } catch {
-            return ""
+            return nil
         }
     }
     

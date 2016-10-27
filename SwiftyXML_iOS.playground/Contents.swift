@@ -57,7 +57,11 @@ public enum Color : String {
     case Red, Navy, Burgundy
 }
 let c: Color = xml["product"]["catalog_item"]["size"]["color_swatch"].value()
-
+do {
+    let c: Color = try "red".getValue()
+} catch {
+    print(error)
+}
 
 // enable debugger, default is true
 XML.debugEnabled = true

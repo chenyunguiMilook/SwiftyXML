@@ -34,6 +34,9 @@ public enum XMLSubscriptKey {
 public enum XMLSubscriptError : Error {
     case failue(String)
 }
+public enum InitError : Error {
+    case failue(String)
+}
 
 public enum XMLSubscriptResult {
 
@@ -340,6 +343,84 @@ extension StringProvider {
     public func value<T>() -> T! where T: RawRepresentable, T.RawValue == Int32  { return T(rawValue: self.int32)  }
     public func value<T>() -> T! where T: RawRepresentable, T.RawValue == Int64  { return T(rawValue: self.int64)  }
     public func value<T>() -> T! where T: RawRepresentable, T.RawValue == Int    { return T(rawValue: self.int)    }
+    
+    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == String {
+        if let t = T(rawValue: self.string) {
+            return t
+        } else {
+            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.string)]")
+        }
+    }
+    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt8  {
+        if let t = T(rawValue: self.uInt8)  {
+            return t
+        } else {
+            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.uInt8)]")
+        }
+    }
+    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt16 {
+        if let t = T(rawValue: self.uInt16) {
+            return t
+        } else {
+            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.uInt16)]")
+        }
+    }
+    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt32 {
+        if let t = T(rawValue: self.uInt32) {
+            return t
+        } else {
+            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.uInt32)]")
+        }
+    }
+    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt64 {
+        if let t = T(rawValue: self.uInt64) {
+            return t
+        } else {
+            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.uInt64)]")
+        }
+    }
+    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt   {
+        if let t = T(rawValue: self.uInt)   {
+            return t
+        } else {
+            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.uInt)]")
+        }
+    }
+    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == Int8   {
+        if let t = T(rawValue: self.int8)   {
+            return t
+        } else {
+            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.int8)]")
+        }
+    }
+    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == Int16  {
+        if let t = T(rawValue: self.int16)  {
+            return t
+        } else {
+            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.int16)]")
+        }
+    }
+    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == Int32  {
+        if let t = T(rawValue: self.int32)  {
+            return t
+        } else {
+            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.int32)]")
+        }
+    }
+    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == Int64  {
+        if let t = T(rawValue: self.int64)  {
+            return t
+        } else {
+            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.int64)]")
+        }
+    }
+    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == Int    {
+        if let t = T(rawValue: self.int)    {
+            return t
+        } else {
+            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.int)]")
+        }
+    }
 }
 
 extension StringProvider {

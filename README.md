@@ -104,8 +104,8 @@ if let xml = xml["product"]["catalog_item"]["size"]["color_swatch"].xml {
 
 ```swift
 // attribute chain
-xml[chain: "product.catalog_item.size.color_swatch.@image"] //"red_cardigan.jpg"
-xml[chain: "product.@description"] //"Cardigan Sweater"
+xml.attributeByChain("product.catalog_item.size.color_swatch.@image") //"red_cardigan.jpg"
+xml.attributeByChain("product.@description") //"Cardigan Sweater"
 ```
 
 #### Print out the error

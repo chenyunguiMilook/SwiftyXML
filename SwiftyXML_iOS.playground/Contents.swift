@@ -34,8 +34,8 @@ if let xml = xml["product"]["catalog_item"]["size"]["color_swatch"].xml {
 }
 
 // attribute chain
-xml[chain: "product.catalog_item.size.color_swatch.@image"]
-xml[chain: "product.@description"]
+xml.attributeByChain("product.catalog_item.size.color_swatch.@image")
+xml.attributeByChain("product.@description")
 
 // handle xml attributes
 let attributes = xml["product"]["catalog_item"][1]["size"]["color_swatch"].attributes

@@ -31,11 +31,11 @@ public enum XMLSubscriptKey {
     case key(String)
 }
 
-public enum XMLSubscriptError : Error {
-    case failue(String)
-}
-public enum InitError : Error {
-    case failue(String)
+public enum XMLError : Error {
+    case subscriptFailue(String)
+    case initFailue(String)
+    case wrongChain(String)
+    case attributeNotExist(String)
 }
 
 public enum XMLSubscriptResult {
@@ -101,7 +101,7 @@ public enum XMLSubscriptResult {
         switch self {
         case .null(let error):
             log(error)
-            throw XMLSubscriptError.failue(error)
+            throw XMLError.subscriptFailue(error)
         case .xml(let xml, _): return xml
         case .array(let xmls, _): return xmls[0]
         }
@@ -142,7 +142,7 @@ public enum XMLSubscriptResult {
         switch self {
         case .null(let error):
             log(error)
-            throw XMLSubscriptError.failue(error)
+            throw XMLError.subscriptFailue(error)
         case .xml(let xml, _): return [xml]
         case .array(let xmls, _): return xmls
         }
@@ -265,7 +265,15 @@ open class XML {
     /// get attribute using single connected string
     ///
     /// - Parameter chain: the format should like this "blendMode.@name" or "@name", use ".@" means get attribute, use "." means get child node
-    public subscript(chain chain: String) -> String {
+    public func attributeByChain(_ chain: String) -> String {
+        do {
+            return try getAttributeByChain(chain)
+        } catch {
+            return ""
+        }
+    }
+    
+    public func getAttributeByChain(_ chain: String) throws -> String {
         if let aChain = AttributeChain(string: chain) {
             var result: XMLSubscriptResult?
             for (i, path) in aChain.pathComponents.enumerated() {
@@ -275,23 +283,32 @@ open class XML {
                     result = result![path]
                 }
             }
-            if result != nil {
+            if let subResult = result {
                 if let attr = aChain.attribute {
-                    return result!.attribute(of: attr)
+                    let xml = try subResult.getXML()
+                    if let attResult = xml.attributes[attr] {
+                        return attResult
+                    } else {
+                        throw XMLError.attributeNotExist(attr)
+                    }
+                    
                 } else {
-                    return result!.string
+                    return subResult.string
                 }
             } else {
                 if let attr = aChain.attribute {
-                    return self.attribute(of: attr)
+                    if let attResult = self.attributes[attr] {
+                        return attResult
+                    } else {
+                        throw XMLError.attributeNotExist(attr)
+                    }
                 } else {
                     return self.value ?? ""
                 }
             }
         } else {
-            print("wrong chain format: \(chain)")
+            throw XMLError.wrongChain(chain)
         }
-        return ""
     }
     
     public func addAttribute(name:String, value:Any) {
@@ -403,77 +420,77 @@ extension StringProvider {
         if let t = T(rawValue: self.string) {
             return t
         } else {
-            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.string)]")
+            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.string)]")
         }
     }
     public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt8  {
         if let t = T(rawValue: self.uInt8)  {
             return t
         } else {
-            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.uInt8)]")
+            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.uInt8)]")
         }
     }
     public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt16 {
         if let t = T(rawValue: self.uInt16) {
             return t
         } else {
-            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.uInt16)]")
+            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.uInt16)]")
         }
     }
     public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt32 {
         if let t = T(rawValue: self.uInt32) {
             return t
         } else {
-            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.uInt32)]")
+            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.uInt32)]")
         }
     }
     public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt64 {
         if let t = T(rawValue: self.uInt64) {
             return t
         } else {
-            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.uInt64)]")
+            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.uInt64)]")
         }
     }
     public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt   {
         if let t = T(rawValue: self.uInt)   {
             return t
         } else {
-            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.uInt)]")
+            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.uInt)]")
         }
     }
     public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == Int8   {
         if let t = T(rawValue: self.int8)   {
             return t
         } else {
-            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.int8)]")
+            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.int8)]")
         }
     }
     public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == Int16  {
         if let t = T(rawValue: self.int16)  {
             return t
         } else {
-            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.int16)]")
+            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.int16)]")
         }
     }
     public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == Int32  {
         if let t = T(rawValue: self.int32)  {
             return t
         } else {
-            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.int32)]")
+            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.int32)]")
         }
     }
     public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == Int64  {
         if let t = T(rawValue: self.int64)  {
             return t
         } else {
-            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.int64)]")
+            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.int64)]")
         }
     }
     public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == Int    {
         if let t = T(rawValue: self.int)    {
             return t
         } else {
-            throw InitError.failue("[\(T.self)] init failed with raw value: [\(self.int)]")
+            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.int)]")
         }
     }
 }

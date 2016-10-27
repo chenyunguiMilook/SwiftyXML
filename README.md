@@ -100,7 +100,29 @@ if let xml = xml["product"]["catalog_item"]["size"]["color_swatch"].xml {
 }
 ```
 
-####Access XML Attributes
+####Print out the error
+
+```swift
+if let color1 = xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].xml {
+    // do stuff ~
+} else {
+    print(xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].error)
+    //["product"][0]["catalog_item"][0]: no such children named: "wrong_size"
+}
+```
+
+#### Catch the error 
+
+```swift
+do {
+    let color1 = try xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].getXML()
+} catch {
+    print(error) //failue(["product"][0]["catalog_item"][0]: no such children named: "wrong_size")
+}
+```
+
+#### Access XML Attributes
+
 ```swift
 // handle xml attributes
 let attributes = xml["product"]["catalog_item"][1]["size"]["color_swatch"].attributes

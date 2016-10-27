@@ -9,7 +9,20 @@ print(xml.toXMLString())
 
 let color = xml["product"]["catalog_item"]["size"]["color_swatch"][1].string
 let price = xml["product"]["catalog_item"]["price"].float
-let color1 = xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].string
+
+// print the error
+if let color1 = xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].xml {
+    // do stuff ~
+} else {
+    print(xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].error)
+}
+
+// catch the error
+do {
+    let color1 = try xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].getXML()
+} catch {
+    print(error)
+}
 
 // handle xml
 if let xml = xml["product"]["catalog_item"]["size"]["color_swatch"].xml {

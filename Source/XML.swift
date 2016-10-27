@@ -31,6 +31,10 @@ public enum XMLSubscriptKey {
     case key(String)
 }
 
+public enum XMLSubscriptError : Error {
+    case failue(String)
+}
+
 public enum XMLSubscriptResult {
 
     case null(String)         // means: null(error: String)
@@ -83,12 +87,28 @@ public enum XMLSubscriptResult {
     }
     
     public var xml:XML? {
+        do {
+            return try self.getXML()
+        } catch {
+            return nil
+        }
+    }
+    
+    public func getXML() throws -> XML {
         switch self {
         case .null(let error):
             log(error)
-            return nil
+            throw XMLSubscriptError.failue(error)
         case .xml(let xml, _): return xml
-        case .array(let xmls, _): return xmls.first
+        case .array(let xmls, _): return xmls[0]
+        }
+    }
+    
+    public var error: String {
+        switch self {
+        case .null(let error):
+            return error
+        default: return ""
         }
     }
     
@@ -108,10 +128,18 @@ public enum XMLSubscriptResult {
     }
     
     public var list:[XML] {
+        do {
+            return try getList()
+        } catch {
+            return []
+        }
+    }
+    
+    public func getList() throws -> [XML] {
         switch self {
         case .null(let error):
             log(error)
-            return []
+            throw XMLSubscriptError.failue(error)
         case .xml(let xml, _): return [xml]
         case .array(let xmls, _): return xmls
         }
@@ -453,7 +481,7 @@ public class SimpleXMLParser: NSObject, XMLParserDelegate {
         parser.shouldResolveExternalEntities = false
         
         guard parser.parse() else {
-            guard let error = parseError else { fatalError("must have some error") }
+            guard let error = parseError else { fatalError("XML parsing exception !") }
             throw error
         }
     }

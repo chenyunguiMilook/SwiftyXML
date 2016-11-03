@@ -33,7 +33,6 @@ public enum XMLError : Error {
     case subscriptFailue(String)
     case initFailue(String)
     case wrongChain(String)
-    case attributeNotExist(String)
 }
 
 public enum XMLSubscriptResult {

@@ -398,17 +398,17 @@ extension XMLSubscriptResult : Sequence {
 // MARK: - StringProvider protocol and extensions
 
 public protocol StringProvider {
-    var stringSource: String? { get }
+    var string: String? { get }
 }
 
 extension XML : StringProvider {
-    public var stringSource: String? {
+    public var string: String? {
         return self.value
     }
 }
 
 extension XMLSubscriptResult : StringProvider {
-    public var stringSource: String? {
+    public var string: String? {
         switch self {
         case .null(_):               return nil
         case .string(let string, _): return string
@@ -463,62 +463,59 @@ extension StringProvider {
 extension StringProvider {
     
     public var bool: Bool? {
-        if let string = self.stringSource { return Bool(string) }
+        if let string = self.string { return Bool(string) }
         return nil
     }
     // unsigned integer
     public var uInt8: UInt8? {
-        if let string = self.stringSource { return UInt8(string) }
+        if let string = self.string { return UInt8(string) }
         return nil
     }
     public var uInt16: UInt16? {
-        if let string = self.stringSource { return UInt16(string) }
+        if let string = self.string { return UInt16(string) }
         return nil
     }
     public var uInt32: UInt32? {
-        if let string = self.stringSource { return UInt32(string) }
+        if let string = self.string { return UInt32(string) }
         return nil
     }
     public var uInt64: UInt64? {
-        if let string = self.stringSource { return UInt64(string) }
+        if let string = self.string { return UInt64(string) }
         return nil
     }
     public var uInt: UInt? {
-        if let string = self.stringSource { return UInt(string) }
+        if let string = self.string { return UInt(string) }
         return nil
     }
     // signed integer
     public var int8: Int8? {
-        if let string = self.stringSource { return Int8(string) }
+        if let string = self.string { return Int8(string) }
         return nil
     }
     public var int16: Int16? {
-        if let string = self.stringSource { return Int16(string) }
+        if let string = self.string { return Int16(string) }
         return nil
     }
     public var int32: Int32? {
-        if let string = self.stringSource { return Int32(string) }
+        if let string = self.string { return Int32(string) }
         return nil
     }
     public var int64: Int64? {
-        if let string = self.stringSource { return Int64(string) }
+        if let string = self.string { return Int64(string) }
         return nil
     }
     public var int: Int? {
-        if let string = self.stringSource { return Int(string) }
+        if let string = self.string { return Int(string) }
         return nil
     }
     // decimal
     public var float: Float? {
-        if let string = self.stringSource { return Float(string) }
+        if let string = self.string { return Float(string) }
         return nil
     }
     public var double: Double? {
-        if let string = self.stringSource { return Double(string) }
+        if let string = self.string { return Double(string) }
         return nil
-    }
-    public var string: String? {
-        return stringSource
     }
 }
 
@@ -568,7 +565,7 @@ extension StringProvider {
         return double ?? 0
     }
     public var stringValue: String {
-        return stringSource ?? ""
+        return string ?? ""
     }
 }
 

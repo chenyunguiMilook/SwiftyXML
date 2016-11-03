@@ -22,13 +22,11 @@
 
 import Foundation
 
-public protocol XMLLogger {
-    func log(_ message: String)
-}
-
 public enum XMLSubscriptKey {
-    case index(Int)
-    case key(String)
+    case index(Int)          // such as: 1
+    case key(String)         // such as: "childName"
+    case keyChain(KeyChain)  // such as: "#childName.childName.@attributeName"
+    case attribute(String)   // such as: "@attributeName"
 }
 
 public enum XMLError : Error {
@@ -40,40 +38,46 @@ public enum XMLError : Error {
 
 public enum XMLSubscriptResult {
 
-    case null(String)         // means: null(error: String)
-    case xml(XML, String)     // means: xml(xml: XML, path: String)
-    case array([XML], String) // means: xml(xmls: [XML], path: String)
+    case null(String)           // means: null(error: String)
+    case xml(XML, String)       // means: xml(xml: XML, path: String)
+    case array([XML], String)   // means: xml(xmls: [XML], path: String)
+    case string(String, String) // means: string(value: String, path: String)
     
     public subscript(index: Int) -> XMLSubscriptResult {
         return self[XMLSubscriptKey.index(index)]
     }
     
     public subscript(key: String) -> XMLSubscriptResult {
-        return self[XMLSubscriptKey.key(key)]
+        if let subscripKey = getXMLSubscriptKey(from: key) {
+            return self[subscripKey]
+        } else {
+            return .null("wrong key chain format")
+        }
     }
     
     public subscript(key: XMLSubscriptKey) -> XMLSubscriptResult {
         
-        if case XMLSubscriptResult.null(_) = self {
-            return self
-        }
-        
-        switch key {
-        case .index(let index):
-            switch self {
+        func subscriptResult(_ result: XMLSubscriptResult, byIndex index: Int) -> XMLSubscriptResult {
+            switch result {
+            case .null(_):      return self
+            case .string(_, let path):
+                return .null(path + ": attribute can not subscript by index: \(index)")
             case .xml(_, let path):
-                return .null(path + ": single xml can not subscript by index")
+                return .null(path + ": single xml can not subscript by index: \(index)")
             case .array(let xmls, let path):
                 if xmls.indices.contains(index) {
                     return .xml(xmls[index], path + "[\(index)]")
                 } else {
                     return .null(path + ": index:\(index) out of bounds: \(xmls.indices)")
                 }
-            default: fatalError()
             }
-            
-        case .key(let key):
-            switch self {
+        }
+        
+        func subscriptResult(_ result: XMLSubscriptResult, byKey key: String) -> XMLSubscriptResult {
+            switch result {
+            case .null(_):      return self
+            case .string(_, let path):
+                return .null(path + ": attribute can not subscript by key: \(key)")
             case .xml(let xml, let path):
                 let array = xml.children.filter{ $0.name == key }
                 if !array.isEmpty {
@@ -84,8 +88,62 @@ public enum XMLSubscriptResult {
             case .array(let xmls, let path):
                 let result = XMLSubscriptResult.xml(xmls[0], path + "[0]")
                 return result[key]
-            default: fatalError()
             }
+        }
+        
+        func subscriptResult(_ result: XMLSubscriptResult, byAttribute attribute: String) -> XMLSubscriptResult {
+            switch result {
+            case .null(_):      return self
+            case .string(_, let path):
+                return .null(path + ": attribute can not subscript by attribute: \(attribute)")
+            case .xml(let xml, let path):
+                if let attr = xml.attributes[attribute] {
+                    return .string(attr, path + "[\"@\(attribute)\"]")
+                } else {
+                    return .null(path + ": no such attribute named: \(attribute)")
+                }
+            case .array(let xmls, let path):
+                if let attr = xmls[0].attributes[attribute] {
+                    return .string(attr, path + "[0][\"@\(attribute)\"]")
+                } else {
+                    return .null(path + "[0][\"@\(attribute)\"]" + ": no such attribute named: \(attribute)")
+                }
+            }
+        }
+        
+        switch key {
+        case .index(let index):
+            return subscriptResult(self, byIndex: index)
+            
+        case .key(let key):
+            return subscriptResult(self, byKey: key)
+            
+        case .keyChain(let keyChain):
+            var result: XMLSubscriptResult?
+            for (i, key) in keyChain.pathComponents.enumerated() {
+                if i == 0 {
+                    switch key {
+                    case .index(let index): result = subscriptResult(self, byIndex: index)
+                    case .key(let key):     result = subscriptResult(self, byKey: key)
+                    default: fatalError("key chain components never contains other type XMLSubscriptionKey")
+                    }
+                }
+                else {
+                    switch key {
+                    case .index(let index): result = subscriptResult(result!, byIndex: index)
+                    case .key(let key):     result = subscriptResult(result!, byKey: key)
+                    default: fatalError("key chain components never contains other type XMLSubscriptionKey")
+                    }
+                }
+            }
+            guard let subResult = result else { fatalError("unexception") }
+            if let attribute = keyChain.attribute {
+                return subscriptResult(subResult, byAttribute: attribute)
+            } else {
+                return subResult
+            }
+        case .attribute(let attribute):
+            return subscriptResult(self, byAttribute: attribute)
         }
     }
     
@@ -100,10 +158,30 @@ public enum XMLSubscriptResult {
     public func getXML() throws -> XML {
         switch self {
         case .null(let error):
-            log(error)
             throw XMLError.subscriptFailue(error)
+        case .string(_, let path):
+            throw XMLError.subscriptFailue("can not get XML from attribute, from keyChain: \(path)")
         case .xml(let xml, _): return xml
         case .array(let xmls, _): return xmls[0]
+        }
+    }
+    
+    public var xmlList:[XML]? {
+        do {
+            return try getXMLList()
+        } catch {
+            return nil
+        }
+    }
+    
+    public func getXMLList() throws -> [XML] {
+        switch self {
+        case .null(let error):
+            throw XMLError.subscriptFailue(error)
+        case .string(_, let path):
+            throw XMLError.subscriptFailue("can not get list from attribute, from keyChain: \(path)")
+        case .xml(let xml, _): return [xml]
+        case .array(let xmls, _): return xmls
         }
     }
     
@@ -114,48 +192,22 @@ public enum XMLSubscriptResult {
         default: return ""
         }
     }
-    
-    public var attributes: [String: String] {
-        return xml?.attributes ?? [:]
-    }
-    
-    @available(*, unavailable, renamed:"XMLSubscriptResult.attribute(of:)")
-    public func getAttribute(_ name: String) -> String { fatalError() }
-    
-    public func attribute(of name: String) -> String {
-        return xml?.attributes[name] ?? ""
-    }
-    
-    public var children:[XML] {
-        return xml?.children ?? []
-    }
-    
-    public var list:[XML] {
-        do {
-            return try getList()
-        } catch {
-            return []
-        }
-    }
-    
-    public func getList() throws -> [XML] {
-        switch self {
-        case .null(let error):
-            log(error)
-            throw XMLError.subscriptFailue(error)
-        case .xml(let xml, _): return [xml]
-        case .array(let xmls, _): return xmls
-        }
-    }
 }
 
-struct AttributeChain {
+public struct KeyChain {
     
-    var pathComponents: [String] = []
+    var pathComponents: [XMLSubscriptKey] = []
     var attribute: String?
     
     init?(string: String) {
         guard !string.isEmpty else { return nil }
+        
+        var string = string
+        if string.hasPrefix("#") {
+            let index = string.index(string.startIndex, offsetBy: 1)
+            string = string.substring(from: index)
+        }
+        
         let strings = string.components(separatedBy: ".").filter{ !$0.isEmpty }
         for (i, str) in strings.enumerated() {
             if str.hasPrefix("@") {
@@ -166,16 +218,17 @@ struct AttributeChain {
                     return nil
                 }
             } else {
-                self.pathComponents.append(str)
+                if let v = UInt(str) {
+                    self.pathComponents.append(.index(Int(v)))
+                } else {
+                    self.pathComponents.append(.key(str))
+                }
             }
         }
     }
 }
 
 open class XML {
-    
-    public static var debugEnabled = true
-    public static var debugLogger:XMLLogger? = nil
     
     public var name:String
     public var attributes:[String: String] = [:]
@@ -196,7 +249,7 @@ open class XML {
         self.parent = nil
     }
     
-    public convenience init(data: Data) {
+    public convenience init!(data: Data) {
         do {
             let parser = SimpleXMLParser(data: data)
             try parser.parse()
@@ -206,18 +259,18 @@ open class XML {
                 fatalError("xml parser exception")
             }
         } catch {
-            log(error.localizedDescription)
-            self.init(name: "error")
+            print(error.localizedDescription)
+            return nil
         }
     }
     
-    public convenience init(url: URL) {
+    public convenience init!(url: URL) {
         do {
             let data = try Data(contentsOf: url)
             self.init(data: data)
         } catch {
-            log(error.localizedDescription)
-            self.init(name: "error")
+            print(error.localizedDescription)
+            return nil
         }
     }
     
@@ -240,7 +293,11 @@ open class XML {
     }
     
     public subscript(key: String) -> XMLSubscriptResult {
-        return self[XMLSubscriptKey.key(key)]
+        if let subscripKey = getXMLSubscriptKey(from: key) {
+            return self[subscripKey]
+        } else {
+            return .null("wrong key chain format: \(key)")
+        }
     }
     
     public subscript(key: XMLSubscriptKey) -> XMLSubscriptResult {
@@ -252,6 +309,7 @@ open class XML {
                 let bounds = self.children.indices
                 return .null("index:\(index) out of bounds: \(bounds)")
             }
+            
         case .key(let key):
             let array = self.children.filter{ $0.name == key }
             if !array.isEmpty {
@@ -259,55 +317,31 @@ open class XML {
             } else {
                 return .null("no such children named: \"\(key)\"")
             }
-        }
-    }
-    
-    /// get attribute using single connected string
-    ///
-    /// - Parameter chain: the format should like this "blendMode.@name" or "@name", use ".@" means get attribute, use "." means get child node
-    public func attributeByChain(_ chain: String) -> String? {
-        do {
-            return try getAttributeByChain(chain)
-        } catch {
-            return nil
-        }
-    }
-    
-    public func getAttributeByChain(_ chain: String) throws -> String {
-        if let aChain = AttributeChain(string: chain) {
+            
+        case .keyChain(let keyChain):
             var result: XMLSubscriptResult?
-            for (i, path) in aChain.pathComponents.enumerated() {
+            for (i, path) in keyChain.pathComponents.enumerated() {
                 if i == 0 {
                     result = self[path]
                 } else {
                     result = result![path]
                 }
             }
-            if let subResult = result {
-                if let attr = aChain.attribute {
-                    let xml = try subResult.getXML()
-                    if let attResult = xml.attributes[attr] {
-                        return attResult
-                    } else {
-                        throw XMLError.attributeNotExist(attr)
-                    }
-                    
-                } else {
-                    return subResult.string
-                }
-            } else {
-                if let attr = aChain.attribute {
-                    if let attResult = self.attributes[attr] {
-                        return attResult
-                    } else {
-                        throw XMLError.attributeNotExist(attr)
-                    }
-                } else {
-                    return self.value ?? ""
-                }
+            guard let subResult = result else {
+                fatalError("")
             }
-        } else {
-            throw XMLError.wrongChain(chain)
+            if let attribute = keyChain.attribute {
+                return subResult[XMLSubscriptKey.attribute(attribute)]
+            } else {
+                return subResult
+            }
+            
+        case .attribute(let attribute):
+            if let attr = self.attributes[attribute] {
+                return .string(attr, "[\(attribute)]")
+            } else {
+                return .null("no such attribute named: \"\(attribute)\"")
+            }
         }
     }
     
@@ -332,10 +366,6 @@ open class XML {
     public func addChildren(_ xmls: [XML]) {
         xmls.forEach{ self.addChild($0) }
     }
-    
-    public func attribute(of name: String) -> String {
-        return self.attributes[name] ?? ""
-    }
 }
 
 // MARK: - XMLSubscriptResult implements Sequence protocol
@@ -346,7 +376,7 @@ public class XMLSubscriptResultIterator : IteratorProtocol {
     var index:Int = 0
     
     public init(result: XMLSubscriptResult) {
-        self.xmls = result.list
+        self.xmls = result.xmlList ?? []
     }
     
     public func next() -> XML? {
@@ -366,183 +396,183 @@ extension XMLSubscriptResult : Sequence {
     }
 }
 
-// MARK: - String extensions
+// MARK: - StringProvider protocol and extensions
 
 public protocol StringProvider {
-    var stringSource: String { get }
-}
-
-extension String : StringProvider {
-    public var stringSource: String {
-        return self
-    }
+    var stringSource: String? { get }
 }
 
 extension XML : StringProvider {
-    public var stringSource: String {
-        if self.value == nil {
-            log("xml: \(self.name) don't have any value")
-        }
-        return value ?? ""
+    public var stringSource: String? {
+        return self.value
     }
 }
 
 extension XMLSubscriptResult : StringProvider {
-    public var stringSource: String {
-        if let xml = self.xml {
-            if let value = xml.value {
-                return value
+    public var stringSource: String? {
+        switch self {
+        case .null(_):               return nil
+        case .string(let string, _): return string
+        case .xml(let xml, _):       return xml.value
+        case .array(let xmls, _):    return xmls[0].value
+        }
+    }
+}
+
+extension RawRepresentable {
+    
+    static func initialize(rawValue: RawValue?) throws -> Self {
+        if let value = rawValue {
+            if let result = Self.init(rawValue: value) {
+                return result
             } else {
-                log("xml: \(xml.name) don't have any value")
-                return String()
+                throw XMLError.initFailue("[\(Self.self)] init failed with raw value: [\(value)]")
             }
-        } else {
-            return String()
         }
+        throw XMLError.initFailue("[\(Self.self)] init failed with nil value")
     }
 }
 
 extension StringProvider {
     
-    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == String { return T(rawValue: self.string) }
-    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == UInt8  { return T(rawValue: self.uInt8)  }
-    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == UInt16 { return T(rawValue: self.uInt16) }
-    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == UInt32 { return T(rawValue: self.uInt32) }
-    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == UInt64 { return T(rawValue: self.uInt64) }
-    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == UInt   { return T(rawValue: self.uInt)   }
-    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == Int8   { return T(rawValue: self.int8)   }
-    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == Int16  { return T(rawValue: self.int16)  }
-    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == Int32  { return T(rawValue: self.int32)  }
-    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == Int64  { return T(rawValue: self.int64)  }
-    public func value<T>() -> T! where T: RawRepresentable, T.RawValue == Int    { return T(rawValue: self.int)    }
+    public func `enum`<T>() -> T? where T: RawRepresentable, T.RawValue == String { return try? T.initialize(rawValue: self.string) }
+    public func `enum`<T>() -> T? where T: RawRepresentable, T.RawValue == UInt8  { return try? T.initialize(rawValue: self.uInt8)  }
+    public func `enum`<T>() -> T? where T: RawRepresentable, T.RawValue == UInt16 { return try? T.initialize(rawValue: self.uInt16) }
+    public func `enum`<T>() -> T? where T: RawRepresentable, T.RawValue == UInt32 { return try? T.initialize(rawValue: self.uInt32) }
+    public func `enum`<T>() -> T? where T: RawRepresentable, T.RawValue == UInt64 { return try? T.initialize(rawValue: self.uInt64) }
+    public func `enum`<T>() -> T? where T: RawRepresentable, T.RawValue == UInt   { return try? T.initialize(rawValue: self.uInt)   }
+    public func `enum`<T>() -> T? where T: RawRepresentable, T.RawValue == Int8   { return try? T.initialize(rawValue: self.int8)   }
+    public func `enum`<T>() -> T? where T: RawRepresentable, T.RawValue == Int16  { return try? T.initialize(rawValue: self.int16)  }
+    public func `enum`<T>() -> T? where T: RawRepresentable, T.RawValue == Int32  { return try? T.initialize(rawValue: self.int32)  }
+    public func `enum`<T>() -> T? where T: RawRepresentable, T.RawValue == Int64  { return try? T.initialize(rawValue: self.int64)  }
+    public func `enum`<T>() -> T? where T: RawRepresentable, T.RawValue == Int    { return try? T.initialize(rawValue: self.int)    }
     
-    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == String {
-        if let t = T(rawValue: self.string) {
-            return t
-        } else {
-            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.string)]")
-        }
-    }
-    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt8  {
-        if let t = T(rawValue: self.uInt8)  {
-            return t
-        } else {
-            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.uInt8)]")
-        }
-    }
-    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt16 {
-        if let t = T(rawValue: self.uInt16) {
-            return t
-        } else {
-            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.uInt16)]")
-        }
-    }
-    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt32 {
-        if let t = T(rawValue: self.uInt32) {
-            return t
-        } else {
-            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.uInt32)]")
-        }
-    }
-    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt64 {
-        if let t = T(rawValue: self.uInt64) {
-            return t
-        } else {
-            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.uInt64)]")
-        }
-    }
-    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt   {
-        if let t = T(rawValue: self.uInt)   {
-            return t
-        } else {
-            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.uInt)]")
-        }
-    }
-    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == Int8   {
-        if let t = T(rawValue: self.int8)   {
-            return t
-        } else {
-            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.int8)]")
-        }
-    }
-    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == Int16  {
-        if let t = T(rawValue: self.int16)  {
-            return t
-        } else {
-            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.int16)]")
-        }
-    }
-    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == Int32  {
-        if let t = T(rawValue: self.int32)  {
-            return t
-        } else {
-            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.int32)]")
-        }
-    }
-    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == Int64  {
-        if let t = T(rawValue: self.int64)  {
-            return t
-        } else {
-            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.int64)]")
-        }
-    }
-    public func getValue<T>() throws -> T where T: RawRepresentable, T.RawValue == Int    {
-        if let t = T(rawValue: self.int)    {
-            return t
-        } else {
-            throw XMLError.initFailue("[\(T.self)] init failed with raw value: [\(self.int)]")
-        }
-    }
+    public func getEnum<T>() throws -> T where T: RawRepresentable, T.RawValue == String { return try T.initialize(rawValue: self.string) }
+    public func getEnum<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt8  { return try T.initialize(rawValue: self.uInt8)  }
+    public func getEnum<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt16 { return try T.initialize(rawValue: self.uInt16) }
+    public func getEnum<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt32 { return try T.initialize(rawValue: self.uInt32) }
+    public func getEnum<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt64 { return try T.initialize(rawValue: self.uInt64) }
+    public func getEnum<T>() throws -> T where T: RawRepresentable, T.RawValue == UInt   { return try T.initialize(rawValue: self.uInt)   }
+    public func getEnum<T>() throws -> T where T: RawRepresentable, T.RawValue == Int8   { return try T.initialize(rawValue: self.int8)   }
+    public func getEnum<T>() throws -> T where T: RawRepresentable, T.RawValue == Int16  { return try T.initialize(rawValue: self.int16)  }
+    public func getEnum<T>() throws -> T where T: RawRepresentable, T.RawValue == Int32  { return try T.initialize(rawValue: self.int32)  }
+    public func getEnum<T>() throws -> T where T: RawRepresentable, T.RawValue == Int64  { return try T.initialize(rawValue: self.int64)  }
+    public func getEnum<T>() throws -> T where T: RawRepresentable, T.RawValue == Int    { return try T.initialize(rawValue: self.int)    }
 }
 
+// optional
 extension StringProvider {
     
-    public var bool: Bool {
-        return (stringSource as NSString).boolValue
+    public var bool: Bool? {
+        if let string = self.stringSource { return Bool(string) }
+        return nil
     }
     // unsigned integer
-    public var uInt8: UInt8 {
-        return UInt8(self.int)
+    public var uInt8: UInt8? {
+        if let string = self.stringSource { return UInt8(string) }
+        return nil
     }
-    public var uInt16: UInt16 {
-        return UInt16(self.int)
+    public var uInt16: UInt16? {
+        if let string = self.stringSource { return UInt16(string) }
+        return nil
     }
-    public var uInt32: UInt32 {
-        return UInt32(self.int64)
+    public var uInt32: UInt32? {
+        if let string = self.stringSource { return UInt32(string) }
+        return nil
     }
-    public var uInt64: UInt64 {
-        return UInt64(self.int64)
+    public var uInt64: UInt64? {
+        if let string = self.stringSource { return UInt64(string) }
+        return nil
     }
-    public var uInt: UInt {
-        return UInt(self.int64)
+    public var uInt: UInt? {
+        if let string = self.stringSource { return UInt(string) }
+        return nil
     }
     // signed integer
-    public var int8: Int8 {
-        return Int8(self.int)
+    public var int8: Int8? {
+        if let string = self.stringSource { return Int8(string) }
+        return nil
     }
-    public var int16: Int16 {
-        return Int16(self.int)
+    public var int16: Int16? {
+        if let string = self.stringSource { return Int16(string) }
+        return nil
     }
-    public var int32: Int32 {
-        return (stringSource as NSString).intValue
+    public var int32: Int32? {
+        if let string = self.stringSource { return Int32(string) }
+        return nil
     }
-    public var int64: Int64 {
-        return (stringSource as NSString).longLongValue
+    public var int64: Int64? {
+        if let string = self.stringSource { return Int64(string) }
+        return nil
     }
-    public var int: Int {
-        return (stringSource as NSString).integerValue
+    public var int: Int? {
+        if let string = self.stringSource { return Int(string) }
+        return nil
     }
     // decimal
-    public var float: Float {
-        return (stringSource as NSString).floatValue
+    public var float: Float? {
+        if let string = self.stringSource { return Float(string) }
+        return nil
     }
-    public var double: Double {
-        return (stringSource as NSString).doubleValue
+    public var double: Double? {
+        if let string = self.stringSource { return Double(string) }
+        return nil
     }
-    public var string: String {
+    public var string: String? {
         return stringSource
     }
 }
+
+// non optional
+extension StringProvider {
+    
+    public var boolValue: Bool {
+        return bool ?? false
+    }
+    // unsigned integer
+    public var uInt8Value: UInt8 {
+        return uInt8 ?? 0
+    }
+    public var uInt16Value: UInt16 {
+        return uInt16 ?? 0
+    }
+    public var uInt32Value: UInt32 {
+        return uInt32 ?? 0
+    }
+    public var uInt64Value: UInt64 {
+        return uInt64 ?? 0
+    }
+    public var uIntValue: UInt {
+        return uInt ?? 0
+    }
+    // signed integer
+    public var int8Value: Int8 {
+        return int8 ?? 0
+    }
+    public var int16Value: Int16 {
+        return int16 ?? 0
+    }
+    public var int32Value: Int32 {
+        return int32 ?? 0
+    }
+    public var int64Value: Int64 {
+        return int64 ?? 0
+    }
+    public var intValue: Int {
+        return int ?? 0
+    }
+    // decimal
+    public var floatValue: Float {
+        return float ?? 0
+    }
+    public var doubleValue: Double {
+        return double ?? 0
+    }
+    public var stringValue: String {
+        return stringSource ?? ""
+    }
+}
+
 
 // MARK: - XML Descriptions
 
@@ -611,7 +641,6 @@ public extension XML {
     }
 }
 
-
 public class SimpleXMLParser: NSObject, XMLParserDelegate {
     
     public var root:XML?
@@ -675,11 +704,20 @@ public class SimpleXMLParser: NSObject, XMLParserDelegate {
     }
 }
 
-fileprivate func log(_ message:String) {
-    guard XML.debugEnabled else { return }
-    if let logger = XML.debugLogger {
-        logger.log("[SwiftyXML]:" + message)
-    } else {
-        print("[SwiftyXML]:" + message)
+fileprivate func getXMLSubscriptKey(from string: String) -> XMLSubscriptKey? {
+    if string.hasPrefix("#") {
+        if let keyChain = KeyChain(string: string) {
+            return XMLSubscriptKey.keyChain(keyChain)
+        } else {
+            return nil
+        }
+    }
+    else if string.hasPrefix("@") {
+        let index = string.index(string.startIndex, offsetBy: 1)
+        let string = string.substring(from: index)
+        return XMLSubscriptKey.attribute(string)
+    }
+    else {
+        return XMLSubscriptKey.key(string)
     }
 }

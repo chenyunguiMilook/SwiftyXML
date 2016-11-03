@@ -38,8 +38,12 @@ With SwiftyXML all you have to do is:
 
 ```swift
 let xml = XML(data: xmlFileData)
-let color = xml["product"]["catalog_item"]["size"]["color_swatch"][1].string //return "Burgundy"
-let price = xml["product"]["catalog_item"]["price"].float // 39.95
+let color0 = xml["product"]["catalog_item"]["size"]["color_swatch"][1].string //"Burgundy"
+let description0 = xml["product"]["catalog_item"]["size"][1]["@description"].string //"Large"
+
+// or use key chain subscript
+let color1 = xml["#product.catalog_item.size.color_swatch.1"].string //"Burgundy"
+let description1 = xml["#product.catalog_item.size.1.@description"].string //"Large"
 ```
 
 This is same as below, SwiftyXML will auto pick the first element as default: 
@@ -53,9 +57,13 @@ What about if you input some wrong keys:
 
 ```swift
 let xml = XML(data: xmlFileData)
-let color = xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].string //return ""
-//output: [SwiftyXML]:["product"][0]["catalog_item"][0]: no such children named: "wrong_size"
-//you can easily found the issue and fix it
+// print the error
+if let color1 = xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].xml {
+    // do stuff ~
+} else {
+    print(xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].error)
+    //["product"][0]["catalog_item"][0]: no such children named: "wrong_size"
+}
 ```
 
 ## Requirements
@@ -88,27 +96,15 @@ import SwiftyXML
 ```swift
 let xml = XML(data: xmlFileData)
 ```
-####Access XML
-```swift
-// handle xml
-if let xml = xml["product"]["catalog_item"]["size"]["color_swatch"].xml {
-    if  let color = xml.value?.string,
-        let image = xml.attributes["image"]?.string {
-        print(color) // "Red\n"
-        print(image) // "red_cardigan.jpg\n"
-    }
-}
-```
-
-####Access XML use attribute chain
+####Access XML use key chain
 
 ```swift
-// attribute chain
-xml.attributeByChain("product.catalog_item.size.color_swatch.@image") //"red_cardigan.jpg"
-xml.attributeByChain("product.@description") //"Cardigan Sweater"
+// attribute key chain, #: means start key chain subscript, @: means start attribute subscript
+xml["#product.catalog_item.size.color_swatch.@image"].stringValue
+xml["#product.@description"].stringValue
 ```
 
-#### Print out the error
+#### Access XML and print out the error
 
 ```swift
 if let color1 = xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].xml {
@@ -122,67 +118,35 @@ if let color1 = xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].x
 #### Catch the error 
 
 ```swift
+// catch the error
 do {
-    let color1 = try xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].getXML()
+    let color = try xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].getXML()
 } catch {
-    print(error) //failue(["product"][0]["catalog_item"][0]: no such children named: "wrong_size")
+    print(error)
 }
 ```
 
-#### Access XML Attributes
-
-```swift
-// handle xml attributes
-let attributes = xml["product"]["catalog_item"][1]["size"]["color_swatch"].attributes
-if let image = attributes["image"]?.string {
-    print(image) // "red_cardigan.jpg\n"
-}
-
-// or non optional result
-let image = xml["product"]["catalog_item"][1]["size"]["color_swatch"].attribute(of: "image")
-```
 #### Access XML List
 
 ```swift
 // handle xml list
 for catalog in xml["product"]["catalog_item"] {
     for size in catalog["size"] {
-        if let description = size.attributes["description"] {
-            print(description) //3 times: Medium Large Small
-        }
+        print(size["@description"].stringValue)
     }
 }
 ```
 #### Read Enums
 
 ```Swift
-// read enum value
+// read enum value, Notice: enum need implements RawRepresentable
 public enum Color : String {
     case Red, Navy, Burgundy
 }
-let c: Color = xml["product"]["catalog_item"]["size"]["color_swatch"].value() //Red
-```
 
-####Debugging
-
-```swift
-// enable debugger, default is true
-XML.debugEnabled = true
-
-// implement you own Logger, you can save the log to file, or showing on debug pannel
-public class MyLogger : XMLLogger {
-    public var messages: [String] = []
-    
-    public func log(_ message: String) {
-        messages.append(message)
-    }
-    public func saveLog(to url:URL) {
-        // save out you logger
-    }
+if let c: Color = xml["product"]["catalog_item"]["size"]["color_swatch"].enum() {
+    print(c)
 }
-
-let logger = MyLogger()
-XML.debugLogger = logger
 ```
 
 #### Construct XML

@@ -82,7 +82,7 @@ let package = Package(
     name: "PROJECT_NAME",
     targets: [],
     dependencies: [
-        .Package(url: "https://github.com/chenyunguiMilook/SwiftyXML.git", majorVersion: 1)
+        .Package(url: "https://github.com/chenyunguiMilook/SwiftyXML.git", majorVersion: 1, minor: 1)
     ]
 )
 ```

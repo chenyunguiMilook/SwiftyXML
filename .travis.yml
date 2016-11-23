@@ -1,8 +1,17 @@
 language: objective-c
-
 osx_image: xcode8
+xcode_project: SwiftyXML.xcodeproj
 xcode_sdk: iphonesimulator10.0
-
-script: 
-  - rvm get head # https://github.com/travis-ci/travis-ci/issues/6307
-  - 'sh scripts/ci.sh'
+env:
+  global: 
+    - FRAMEWORK_NAME=SwiftyXML
+before_install:
+  - brew update
+  - brew outdated carthage || brew upgrade carthage
+before_script:
+  # bootstrap the dependencies for the project
+  # you can remove if you don't have dependencies
+  - carthage bootstrap  
+before_deploy:
+  - carthage build --no-skip-current
+  - carthage archive $FRAMEWORK_NAME

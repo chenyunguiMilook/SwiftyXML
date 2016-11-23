@@ -4,7 +4,7 @@ Pod::Spec.new do |s|
   s.summary     = "The most swifty way to deal with XML data in swift 3"
   s.homepage    = "https://github.com/chenyunguiMilook/SwiftyXML"
   s.license     = { :type => "MIT" }
-  s.authors     = { "chenyunguiMilook" => "linixtj2003@aliyun.com" }
+  s.authors     = { "chenyunguiMilook" => "286224043@qq.com" }
 
   s.requires_arc = true
   s.osx.deployment_target = "10.9"

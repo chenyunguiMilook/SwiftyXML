@@ -6,6 +6,16 @@
 
 SwiftyXML use most swifty way to deal with XML data.
 
+## Features
+ 
+ - [x] Infinity subscription
+ - [x] Keychain subscription
+ - [x] Optional | Non-optional value access
+ - [x] Directly access Enum type value (enums extends from RawRepresentable)
+ - [x] Directly for loop in XML children nodes
+ - [x] Accurate error throwing
+ - [x] XML construct, formatting
+ 
 Sample XML: 
 
 ```xml

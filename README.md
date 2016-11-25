@@ -15,7 +15,8 @@ SwiftyXML use most swifty way to deal with XML data.
  - [x] Directly for loop in XML children nodes
  - [x] Accurate error throwing
  - [x] XML construct, formatting
- 
+ - [x] Single source file
+
 Sample XML: 
 
 ```xml

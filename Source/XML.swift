@@ -236,10 +236,12 @@ open class XML {
     
     internal weak var parent:XML?
     
-    public init(name:String, attributes:[String:Any] = [:], value: String? = nil) {
+    public init(name:String, attributes:[String:Any] = [:], value: Any? = nil) {
         self.name = name
         self.addAttributes(attributes)
-        self.value = value
+        if value != nil {
+            self.value = String(describing: value)
+        }
     }
     
     private convenience init(xml: XML) {

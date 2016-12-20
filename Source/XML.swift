@@ -239,7 +239,7 @@ open class XML {
     public init(name:String, attributes:[String:Any] = [:], value: Any? = nil) {
         self.name = name
         self.addAttributes(attributes)
-        if value != nil {
+        if let value = value {
             self.value = String(describing: value)
         }
     }

@@ -684,8 +684,15 @@ public class SimpleXMLParser: NSObject, XMLParserDelegate {
     }
     
     @objc public func parser(_ parser: XMLParser, foundCharacters string: String) {
+
         let newValue = string.trimmingCharacters(in: .whitespacesAndNewlines)
-        self.currentElement?.value = newValue.isEmpty ? nil : newValue
+        guard !newValue.isEmpty else { return }
+        
+        if let currentValue = self.currentElement?.value {
+            self.currentElement?.value = currentValue + "\n" + newValue
+        } else {
+            self.currentElement?.value = newValue
+        }
     }
     
     @objc public func parser(_ parser: XMLParser,

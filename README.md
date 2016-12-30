@@ -7,15 +7,15 @@
 SwiftyXML use most swifty way to deal with XML data.
 
 ## Features
- 
- - [x] Infinity subscription
- - [x] Keychain subscription
- - [x] Optional | Non-optional value access
- - [x] Directly access Enum type value (enums extends from RawRepresentable)
- - [x] Directly for loop in XML children nodes
- - [x] Accurate error throwing
- - [x] XML construct, formatting
- - [x] Single source file
+
+- [x] Infinity subscription
+- [x] Keychain subscription
+- [x] Optional | Non-optional value access
+- [x] Directly access Enum type value (enums extends from RawRepresentable)
+- [x] Directly for loop in XML children nodes
+- [x] Accurate error throwing
+- [x] XML construct, formatting
+- [x] Single source file
 
 Sample XML: 
 
@@ -94,7 +94,7 @@ platform :ios, '8.0'
 use_frameworks!
 
 target ‘MyApp’ do
-    pod 'SwiftyXML’
+    pod 'SwiftyXML’, '~> 1.2.0’
 end
 ```
 
@@ -102,7 +102,7 @@ end
 Create a `Cartfile` that lists the framework and run `carthage update`. Follow the [instructions](https://github.com/Carthage/Carthage#if-youre-building-for-ios) to add `$(SRCROOT)/Carthage/Build/iOS/SwiftyXML.framework` to an iOS project.
 
 ```
-github "chenyunguiMilook/SwiftyXML" ~> 1.1.0
+github "chenyunguiMilook/SwiftyXML" ~> 1.2.0
 ```
 #### Manually
 1. Download and drop ```XML.swift``` into your project.  
@@ -118,7 +118,7 @@ let package = Package(
     name: "PROJECT_NAME",
     targets: [],
     dependencies: [
-        .Package(url: "https://github.com/chenyunguiMilook/SwiftyXML.git", majorVersion: 1, minor: 1)
+        .Package(url: "https://github.com/chenyunguiMilook/SwiftyXML.git", majorVersion: 1, minor: 2)
     ]
 )
 ```

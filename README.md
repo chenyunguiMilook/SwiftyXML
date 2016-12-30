@@ -94,7 +94,7 @@ platform :ios, '8.0'
 use_frameworks!
 
 target 'MyApp' do
-    pod 'SwiftyXML’, '~> 1.2.0'
+    pod 'SwiftyXML', '~> 1.2.0'
 end
 ```
 

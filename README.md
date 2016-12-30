@@ -93,8 +93,8 @@ You can use [CocoaPods](http://cocoapods.org/) to install `SwiftyXML` by adding 
 platform :ios, '8.0'
 use_frameworks!
 
-target ‘MyApp’ do
-    pod 'SwiftyXML’, '~> 1.2.0’
+target 'MyApp' do
+    pod 'SwiftyXML’, '~> 1.2.0'
 end
 ```
 

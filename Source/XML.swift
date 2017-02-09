@@ -36,7 +36,7 @@ public enum XMLError : Error {
 }
 
 public enum XMLSubscriptResult {
-
+    
     case null(String)           // means: null(error: String)
     case xml(XML, String)       // means: xml(xml: XML, path: String)
     case array([XML], String)   // means: xml(xmls: [XML], path: String)
@@ -644,9 +644,14 @@ public class SimpleXMLParser: NSObject, XMLParserDelegate {
     public var root:XML?
     public let data:Data
     
-    var currentParent:XML?
-    var currentElement:XML?
+    weak var currentElement:XML?
     var parseError:Swift.Error?
+    
+    deinit {
+        self.root = nil
+        self.currentElement = nil
+        self.parseError = nil
+    }
     
     public init(data: Data) {
         self.data = data
@@ -659,9 +664,8 @@ public class SimpleXMLParser: NSObject, XMLParserDelegate {
         parser.shouldProcessNamespaces = false
         parser.shouldReportNamespacePrefixes = false
         parser.shouldResolveExternalEntities = false
-        
-        guard parser.parse() else {
-            guard let error = parseError else { fatalError("XML parsing exception !") }
+        parser.parse()
+        if let error = parseError {
             throw error
         }
     }
@@ -673,18 +677,19 @@ public class SimpleXMLParser: NSObject, XMLParserDelegate {
                              qualifiedName qName: String?,
                              attributes attributeDict: [String : String])
     {
+        let element = XML(name: elementName, attributes: attributeDict)
+        
         if self.root == nil {
-            self.root = XML(name: elementName, attributes: attributeDict)
-            self.currentParent = self.root
+            self.root = element
+            self.currentElement = element
         } else {
-            self.currentElement = XML(name: elementName, attributes: attributeDict)
-            self.currentParent?.addChild(self.currentElement!)
-            self.currentParent = currentElement
+            self.currentElement?.addChild(element)
+            self.currentElement = element
         }
     }
     
     @objc public func parser(_ parser: XMLParser, foundCharacters string: String) {
-
+        
         let newValue = string.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !newValue.isEmpty else { return }
         
@@ -700,8 +705,7 @@ public class SimpleXMLParser: NSObject, XMLParserDelegate {
                              namespaceURI: String?,
                              qualifiedName qName: String?)
     {
-        currentParent = currentParent?.parent
-        currentElement = nil
+        currentElement = currentElement?.parent
     }
     
     @objc public func parser(_ parser: XMLParser, parseErrorOccurred parseError: Swift.Error) {

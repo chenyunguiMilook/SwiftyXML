@@ -102,7 +102,7 @@ end
 Create a `Cartfile` that lists the framework and run `carthage update`. Follow the [instructions](https://github.com/Carthage/Carthage#if-youre-building-for-ios) to add `$(SRCROOT)/Carthage/Build/iOS/SwiftyXML.framework` to an iOS project.
 
 ```
-github "chenyunguiMilook/SwiftyXML" ~> 1.2.0
+github "chenyunguiMilook/SwiftyXML" ~> 1.3.0
 ```
 #### Manually
 1. Download and drop ```XML.swift``` into your project.  
@@ -118,7 +118,7 @@ let package = Package(
     name: "PROJECT_NAME",
     targets: [],
     dependencies: [
-        .Package(url: "https://github.com/chenyunguiMilook/SwiftyXML.git", majorVersion: 1, minor: 2)
+        .Package(url: "https://github.com/chenyunguiMilook/SwiftyXML.git", majorVersion: 1, minor: 3)
     ]
 )
 ```

@@ -3,9 +3,7 @@
 import Cocoa
 import SwiftyXML
 
+let xml = XML(url: #fileLiteral(resourceName: "sample.xml"))!
+print(xml.toXMLString())
 
-var str = "Hello, playground"
-let xml = XML(name: "sd")
-
-
-
+xml["result"][0]["address_component"][3]["short_name"].stringValue

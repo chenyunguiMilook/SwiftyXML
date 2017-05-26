@@ -621,18 +621,22 @@ public extension XML {
         var attr = self.getAttributeString()
         attr = attr.isEmpty ? "" : attr + " "
         let tabs = String(repeating: "\t", count: numTabs)
+        var valueString: String = ""
+        if let v = self.value {
+            valueString = v.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
         if attr.isEmpty {
             switch (closed, self.value) {
-            case (true,  .some(_)): return tabs + "<\(name)>\(self.value!)</\(name)>\n"
+            case (true,  .some(_)): return tabs + "<\(name)>\(valueString)</\(name)>\n"
             case (true,  .none):    return tabs + "<\(name) />\n"
-            case (false, .some(_)): return tabs + "<\(name)>\(self.value!)\n"
+            case (false, .some(_)): return tabs + "<\(name)>\(valueString)\n"
             case (false, .none):    return tabs + "<\(name)>\n"
             }
         } else {
             switch (closed, self.value) {
-            case (true,  .some(_)): return tabs + "<\(name)" + attr + ">\(self.value!)</\(name)>\n"
+            case (true,  .some(_)): return tabs + "<\(name)" + attr + ">\(valueString)</\(name)>\n"
             case (true,  .none):    return tabs + "<\(name)" + attr + "/>\n"
-            case (false, .some(_)): return tabs + "<\(name)" + attr + ">\(self.value!)\n"
+            case (false, .some(_)): return tabs + "<\(name)" + attr + ">\(valueString)\n"
             case (false, .none):    return tabs + "<\(name)" + attr + ">\n"
             }
         }
@@ -690,13 +694,10 @@ public class SimpleXMLParser: NSObject, XMLParserDelegate {
     
     @objc public func parser(_ parser: XMLParser, foundCharacters string: String) {
         
-        let newValue = string.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !newValue.isEmpty else { return }
-        
         if let currentValue = self.currentElement?.value {
-            self.currentElement?.value = currentValue + "\n" + newValue
+            self.currentElement?.value = currentValue + string
         } else {
-            self.currentElement?.value = newValue
+            self.currentElement?.value = string
         }
     }
     

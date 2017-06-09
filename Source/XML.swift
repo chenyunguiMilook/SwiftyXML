@@ -602,7 +602,7 @@ public extension XML {
     }
     
     private func getAttributeString() -> String {
-        return self.attributes.map{ " \($0)=\"\($1)\"" }.joined()
+        return self.attributes.map{ " \($0.0)=\"\($0.1)\"" }.joined()
     }
     
     private func getStartPart(numTabs:Int) -> String {

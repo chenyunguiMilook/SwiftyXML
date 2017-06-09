@@ -17,12 +17,14 @@ let description1 = xml["#product.catalog_item.size.1.@description"].string
 // print the error
 if let color1 = xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].xml {
     // do stuff ~
+    print(color1)
 } else {
     print(xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].error)
 }
 
 if let color1 = xml["#product.catalog_item.wrong_size.wrong_color.1"].xml {
     // do stuff ~
+    print(color1)
 } else {
     print(xml["#product.catalog_item.wrong_size.wrong_color.1"].error)
 }
@@ -30,6 +32,7 @@ if let color1 = xml["#product.catalog_item.wrong_size.wrong_color.1"].xml {
 // catch the error
 do {
     let color = try xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].getXML()
+    print(color)
 } catch {
     print(error)
 }

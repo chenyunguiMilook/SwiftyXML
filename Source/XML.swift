@@ -204,7 +204,7 @@ public struct KeyChain {
         var string = string
         if string.hasPrefix("#") {
             let index = string.index(string.startIndex, offsetBy: 1)
-            string = string.substring(from: index)
+            string = String(string[index...])
         }
         
         let strings = string.components(separatedBy: ".").filter{ !$0.isEmpty }
@@ -212,7 +212,7 @@ public struct KeyChain {
             if str.hasPrefix("@") {
                 if i == strings.count - 1 {
                     let index = str.index(str.startIndex, offsetBy: 1)
-                    self.attribute = str.substring(from: index)
+                    self.attribute = String(str[index...])
                 } else {
                     return nil
                 }
@@ -724,7 +724,7 @@ fileprivate func getXMLSubscriptKey(from string: String) -> XMLSubscriptKey? {
     }
     else if string.hasPrefix("@") {
         let index = string.index(string.startIndex, offsetBy: 1)
-        let string = string.substring(from: index)
+        let string = String(string[index...])
         return XMLSubscriptKey.attribute(string)
     }
     else {

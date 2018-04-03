@@ -147,10 +147,13 @@ public enum XMLSubscriptResult {
     }
     
     public var xml:XML? {
-        do {
-            return try self.getXML()
-        } catch {
+        switch self {
+        case .null(_):
             return nil
+        case .string(_, _):
+            return nil
+        case .xml(let xml, _): return xml
+        case .array(let xmls, _): return xmls[0]
         }
     }
     

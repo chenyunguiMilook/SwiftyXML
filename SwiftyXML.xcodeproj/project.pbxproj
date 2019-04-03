@@ -60,6 +60,7 @@
 		A8580F781BCF5C5B00DA927B /* Info-tvOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-tvOS.plist"; sourceTree = "<group>"; };
 		BB16D7F01D9B8FAE005322F0 /* XML.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = XML.swift; sourceTree = "<group>"; };
 		BB16D7F51D9B9180005322F0 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
+		BB47BF922254991800504F0C /* SwiftyXML.podspec */ = {isa = PBXFileReference; lastKnownFileType = text; path = SwiftyXML.podspec; sourceTree = "<group>"; };
 		E4D7CCE81B9465A700EE7221 /* SwiftyXML.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SwiftyXML.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4D7CCE91B9465A800EE7221 /* Info-watchOS.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-watchOS.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -123,6 +124,7 @@
 		2E4FEFD119575BE100351305 = {
 			isa = PBXGroup;
 			children = (
+				BB47BF922254991800504F0C /* SwiftyXML.podspec */,
 				BB16D7F51D9B9180005322F0 /* Package.swift */,
 				2E4FEFDD19575BE100351305 /* Source */,
 				2E4FEFEA19575BE100351305 /* Tests */,

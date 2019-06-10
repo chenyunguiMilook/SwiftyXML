@@ -1,6 +1,6 @@
 [![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
 
-#SwiftyXML
+# SwiftyXML
 
  ![Platform](https://img.shields.io/badge/platforms-iOS%208.0+%20%7C%20macOS%2010.10+%20%7C%20tvOS%209.0+%20%7C%20watchOS%202.0+-333333.svg)
 
@@ -109,7 +109,7 @@ github "chenyunguiMilook/SwiftyXML" ~> 2.0.0
 2. Congratulations!  
 
 
-####Swift Package Manager
+#### Swift Package Manager
 You can use [The Swift Package Manager](https://swift.org/package-manager) to install `SwiftyXML` by adding the proper description to your `Package.swift` file:
 ```swift
 import PackageDescription
@@ -125,14 +125,14 @@ let package = Package(
 
 ## Usage
 
-####Initialization
+#### Initialization
 ```swift
 import SwiftyXML
 ```
 ```swift
 let xml = XML(data: xmlFileData)
 ```
-####Access XML use key chain
+#### Access XML use key chain
 
 ```swift
 // attribute key chain, #: means start key chain subscript, @: means start attribute subscript

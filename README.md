@@ -8,8 +8,8 @@ SwiftyXML use most swifty way to deal with XML data.
 
 ## Features
 
-- [x] Infinity subscription
-- [x] Keychain subscription
+- [x] Infinity subscript
+- [x] dynamicMemberLookup Support (use $ started string to subscript attribute)
 - [x] Optional | Non-optional value access
 - [x] Directly access Enum type value (enums extends from RawRepresentable)
 - [x] Directly for loop in XML children nodes
@@ -50,20 +50,17 @@ Sample XML:
 With SwiftyXML all you have to do is:
 
 ```swift
-let xml = XML(data: xmlFileData)
-let color0 = xml["product"]["catalog_item"]["size"]["color_swatch"][1].string //"Burgundy"
-let description0 = xml["product"]["catalog_item"]["size"][1]["@description"].string //"Large"
-
-// or use key chain subscript
-let color1 = xml["#product.catalog_item.size.color_swatch.1"].string //"Burgundy"
-let description1 = xml["#product.catalog_item.size.1.@description"].string //"Large"
+let xml = XML(string: xmlContent)
+let color0 = xml.product.catalog_item.size.color_swatch.1.string //"Burgundy"
+// notice that, we use "$" prefix for subscript attribute
+let description0 = xml.product.catalog_item.size.1.$description.string //"Large"
 ```
 
 This is same as below, SwiftyXML will auto pick the first element as default: 
 
 ```swift
 let xml = XML(data: xmlFileData)
-let color = xml["product"][0]["catalog_item"][0]["size"][0]["color_swatch"][1].string //return "Burgundy"
+let color = xml.product.0.catalog_item.0.size.0.color_swatch.1.string //return "Burgundy"
 ```
 
 What about if you input some wrong keys:
@@ -71,11 +68,11 @@ What about if you input some wrong keys:
 ```swift
 let xml = XML(data: xmlFileData)
 // print the error
-if let color1 = xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].xml {
+if let color1 = xml.product.catalog_item.wrong_size.wrong_color.1.xml {
     // do stuff ~
+    print(color1)
 } else {
-    print(xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].error)
-    //["product"][0]["catalog_item"][0]: no such children named: "wrong_size"
+    print(xml.product.catalog_item.wrong_size.wrong_color.1.error) //.product.0.catalog_item.0: no such children named: "wrong_size"
 }
 ```
 
@@ -94,7 +91,7 @@ platform :ios, '8.0'
 use_frameworks!
 
 target 'MyApp' do
-    pod 'SwiftyXML', '~> 2.0.0'
+    pod 'SwiftyXML', '~> 3.0.0'
 end
 ```
 
@@ -102,7 +99,7 @@ end
 Create a `Cartfile` that lists the framework and run `carthage update`. Follow the [instructions](https://github.com/Carthage/Carthage#if-youre-building-for-ios) to add `$(SRCROOT)/Carthage/Build/iOS/SwiftyXML.framework` to an iOS project.
 
 ```
-github "chenyunguiMilook/SwiftyXML" ~> 2.0.0
+github "chenyunguiMilook/SwiftyXML" ~> 3.0.0
 ```
 #### Manually
 1. Download and drop ```XML.swift``` into your project.  
@@ -118,7 +115,7 @@ let package = Package(
     name: "PROJECT_NAME",
     targets: [],
     dependencies: [
-        .Package(url: "https://github.com/chenyunguiMilook/SwiftyXML.git", majorVersion: 2, minor: 0)
+        .Package(url: "https://github.com/chenyunguiMilook/SwiftyXML.git", majorVersion: 3, minor: 0)
     ]
 )
 ```
@@ -132,22 +129,15 @@ import SwiftyXML
 ```swift
 let xml = XML(data: xmlFileData)
 ```
-#### Access XML use key chain
-
-```swift
-// attribute key chain, #: means start key chain subscript, @: means start attribute subscript
-xml["#product.catalog_item.size.color_swatch.@image"].stringValue
-xml["#product.@description"].stringValue
-```
 
 #### Access XML and print out the error
 
 ```swift
-if let color1 = xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].xml {
+if let color1 = xml.product.catalog_item.wrong_size.wrong_color.1.xml {
     // do stuff ~
+    print(color1)
 } else {
-    print(xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].error)
-    //["product"][0]["catalog_item"][0]: no such children named: "wrong_size"
+    print(xml.product.catalog_item.wrong_size.wrong_color.1.error)
 }
 ```
 
@@ -156,7 +146,8 @@ if let color1 = xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].x
 ```swift
 // catch the error
 do {
-    let color = try xml["product"]["catalog_item"]["wrong_size"]["wrong_color"][1].getXML()
+    let color = try xml.product.catalog_item.wrong_size.wrong_color.1.getXML()
+    print(color)
 } catch {
     print(error)
 }
@@ -166,9 +157,9 @@ do {
 
 ```swift
 // handle xml list
-for catalog in xml["product"]["catalog_item"] {
-    for size in catalog["size"] {
-        print(size["@description"].stringValue)
+for catalog in xml.product.catalog_item {
+    for size in catalog.size {
+        print(size.$description.stringValue)
     }
 }
 ```
@@ -180,7 +171,7 @@ public enum Color : String {
     case Red, Navy, Burgundy
 }
 
-if let c: Color = xml["product"]["catalog_item"]["size"]["color_swatch"].enum() {
+if let c: Color = xml.product.catalog_item.size.color_swatch.enum() {
     print(c)
 }
 ```

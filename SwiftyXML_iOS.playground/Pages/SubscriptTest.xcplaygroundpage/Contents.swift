@@ -7,36 +7,33 @@ import SwiftyXML
 let xmlContent = """
 <?xml version="1.0"?>
 <catalog>
-<product description="Cardigan Sweater" product_image="cardigan.jpg">
-<catalog_item gender="Men's">
-<item_number>QWZ5671</item_number>
-<price>39.95</price>
-<size description="Medium">
-<color_swatch image="red_cardigan.jpg">Red</color_swatch>
-<color_swatch image="burgundy_cardigan.jpg">Burgundy</color_swatch>
-</size>
-<size description="Large">
-<color_swatch image="red_cardigan.jpg">Red</color_swatch>
-<color_swatch image="burgundy_cardigan.jpg">Burgundy</color_swatch>
-</size>
-</catalog_item>
-<catalog_item gender="Women's">
-<item_number>RRX9856</item_number>
-<price>42.50</price>
-<size description="Small">
-<color_swatch image="red_cardigan.jpg">Red</color_swatch>
-<color_swatch image="navy_cardigan.jpg">Navy</color_swatch>
-<color_swatch image="burgundy_cardigan.jpg">Burgundy</color_swatch>
-</size>
-</catalog_item>
-</product>
+    <product description="Cardigan Sweater" product_image="cardigan.jpg">
+        <catalog_item gender="Men's">
+            <item_number>QWZ5671</item_number>
+            <price>39.95</price>
+            <size description="Medium">
+                <color_swatch image="red_cardigan.jpg">Red</color_swatch>
+                <color_swatch image="burgundy_cardigan.jpg">Burgundy</color_swatch>
+            </size>
+            <size description="Large">
+                <color_swatch image="red_cardigan.jpg">Red</color_swatch>
+                <color_swatch image="burgundy_cardigan.jpg">Burgundy</color_swatch>
+            </size>
+            </catalog_item>
+            <catalog_item gender="Women's">
+            <item_number>RRX9856</item_number>
+            <price>42.50</price>
+            <size description="Small">
+                <color_swatch image="red_cardigan.jpg">Red</color_swatch>
+                <color_swatch image="navy_cardigan.jpg">Navy</color_swatch>
+                <color_swatch image="burgundy_cardigan.jpg">Burgundy</color_swatch>
+            </size>
+        </catalog_item>
+    </product>
 </catalog>
 """
 
 let xml = XML(string: xmlContent)
-print(xml.toXMLString())
-
-
 let color0 = xml.product.catalog_item.size.color_swatch.1.string
 let description0 = xml.product.catalog_item.size.1.$description.string
 

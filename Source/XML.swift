@@ -25,8 +25,7 @@ import Foundation
 public enum XMLSubscriptKey {
     case index(Int)          // such as: 1
     case key(String)         // such as: "childName"
-    case keyChain(KeyChain)  // such as: "#childName.childName.@attributeName"
-    case attribute(String)   // such as: "@attributeName"
+    case attribute(String)   // such as: "$attributeName"
 }
 
 public enum XMLError : Error {
@@ -35,6 +34,7 @@ public enum XMLError : Error {
     case wrongChain(String)
 }
 
+@dynamicMemberLookup
 public enum XMLSubscriptResult {
     
     case null(String)           // means: null(error: String)
@@ -42,15 +42,15 @@ public enum XMLSubscriptResult {
     case array([XML], String)   // means: xml(xmls: [XML], path: String)
     case string(String, String) // means: string(value: String, path: String)
     
-    public subscript(index: Int) -> XMLSubscriptResult {
-        return self[XMLSubscriptKey.index(index)]
-    }
-    
-    public subscript(key: String) -> XMLSubscriptResult {
-        if let subscripKey = getXMLSubscriptKey(from: key) {
-            return self[subscripKey]
+    public subscript(dynamicMember member: String) -> XMLSubscriptResult {
+        if let index = Int(member) {
+            return self[XMLSubscriptKey.index(index)]
+        } else if member.starts(with: "$") {
+            let attribute = String(member.dropFirst())
+            let key = XMLSubscriptKey.attribute(attribute)
+            return self[key]
         } else {
-            return .null("wrong key chain format")
+            return self[XMLSubscriptKey.key(member)]
         }
     }
     
@@ -58,7 +58,8 @@ public enum XMLSubscriptResult {
         
         func subscriptResult(_ result: XMLSubscriptResult, byIndex index: Int) -> XMLSubscriptResult {
             switch result {
-            case .null(_):      return self
+            case .null(_):
+                return self
             case .string(_, let path):
                 return .null(path + ": attribute can not subscript by index: \(index)")
             case .xml(_, let path):
@@ -74,7 +75,8 @@ public enum XMLSubscriptResult {
         
         func subscriptResult(_ result: XMLSubscriptResult, byKey key: String) -> XMLSubscriptResult {
             switch result {
-            case .null(_):      return self
+            case .null(_):
+                return self
             case .string(_, let path):
                 return .null(path + ": attribute can not subscript by key: \(key)")
             case .xml(let xml, let path):
@@ -86,7 +88,7 @@ public enum XMLSubscriptResult {
                 }
             case .array(let xmls, let path):
                 let result = XMLSubscriptResult.xml(xmls[0], path + "[0]")
-                return result[key]
+                return subscriptResult(result, byKey: key)
             }
         }
         
@@ -97,15 +99,15 @@ public enum XMLSubscriptResult {
                 return .null(path + ": attribute can not subscript by attribute: \(attribute)")
             case .xml(let xml, let path):
                 if let attr = xml.attributes[attribute] {
-                    return .string(attr, path + "[\"@\(attribute)\"]")
+                    return .string(attr, path + "[\"$\(attribute)\"]")
                 } else {
                     return .null(path + ": no such attribute named: \(attribute)")
                 }
             case .array(let xmls, let path):
                 if let attr = xmls[0].attributes[attribute] {
-                    return .string(attr, path + "[0][\"@\(attribute)\"]")
+                    return .string(attr, path + "[0][\"$\(attribute)\"]")
                 } else {
-                    return .null(path + "[0][\"@\(attribute)\"]" + ": no such attribute named: \(attribute)")
+                    return .null(path + "[0][\"$\(attribute)\"]" + ": no such attribute named: \(attribute)")
                 }
             }
         }
@@ -116,31 +118,7 @@ public enum XMLSubscriptResult {
             
         case .key(let key):
             return subscriptResult(self, byKey: key)
-            
-        case .keyChain(let keyChain):
-            var result: XMLSubscriptResult?
-            for (i, key) in keyChain.pathComponents.enumerated() {
-                if i == 0 {
-                    switch key {
-                    case .index(let index): result = subscriptResult(self, byIndex: index)
-                    case .key(let key):     result = subscriptResult(self, byKey: key)
-                    default: fatalError("key chain components never contains other type XMLSubscriptionKey")
-                    }
-                }
-                else {
-                    switch key {
-                    case .index(let index): result = subscriptResult(result!, byIndex: index)
-                    case .key(let key):     result = subscriptResult(result!, byKey: key)
-                    default: fatalError("key chain components never contains other type XMLSubscriptionKey")
-                    }
-                }
-            }
-            guard let subResult = result else { fatalError("unexception") }
-            if let attribute = keyChain.attribute {
-                return subscriptResult(subResult, byAttribute: attribute)
-            } else {
-                return subResult
-            }
+        
         case .attribute(let attribute):
             return subscriptResult(self, byAttribute: attribute)
         }
@@ -199,40 +177,7 @@ public enum XMLSubscriptResult {
     }
 }
 
-public struct KeyChain {
-    
-    var pathComponents: [XMLSubscriptKey] = []
-    var attribute: String?
-    
-    init?(string: String) {
-        guard !string.isEmpty else { return nil }
-        
-        var string = string
-        if string.hasPrefix("#") {
-            let index = string.index(string.startIndex, offsetBy: 1)
-            string = String(string[index...])
-        }
-        
-        let strings = string.components(separatedBy: ".").filter{ !$0.isEmpty }
-        for (i, str) in strings.enumerated() {
-            if str.hasPrefix("@") {
-                if i == strings.count - 1 {
-                    let index = str.index(str.startIndex, offsetBy: 1)
-                    self.attribute = String(str[index...])
-                } else {
-                    return nil
-                }
-            } else {
-                if let v = UInt(str) {
-                    self.pathComponents.append(.index(Int(v)))
-                } else {
-                    self.pathComponents.append(.key(str))
-                }
-            }
-        }
-    }
-}
-
+@dynamicMemberLookup
 open class XML {
     
     public var name:String
@@ -295,15 +240,15 @@ open class XML {
         self.init(data: data)
     }
     
-    public subscript(index: Int) -> XMLSubscriptResult {
-        return self[XMLSubscriptKey.index(index)]
-    }
-    
-    public subscript(key: String) -> XMLSubscriptResult {
-        if let subscripKey = getXMLSubscriptKey(from: key) {
-            return self[subscripKey]
+    public subscript(dynamicMember member: String) -> XMLSubscriptResult {
+        if let index = Int(member) {
+            return self[XMLSubscriptKey.index(index)]
+        } else if member.starts(with: "$") {
+            let attribute = String(member.dropFirst())
+            let key = XMLSubscriptKey.attribute(attribute)
+            return self[key]
         } else {
-            return .null("wrong key chain format: \(key)")
+            return self[XMLSubscriptKey.key(member)]
         }
     }
     
@@ -323,24 +268,6 @@ open class XML {
                 return .array(array, "[\"\(key)\"]")
             } else {
                 return .null("no such children named: \"\(key)\"")
-            }
-            
-        case .keyChain(let keyChain):
-            var result: XMLSubscriptResult?
-            for (i, path) in keyChain.pathComponents.enumerated() {
-                if i == 0 {
-                    result = self[path]
-                } else {
-                    result = result![path]
-                }
-            }
-            guard let subResult = result else {
-                fatalError("")
-            }
-            if let attribute = keyChain.attribute {
-                return subResult[XMLSubscriptKey.attribute(attribute)]
-            } else {
-                return subResult
             }
             
         case .attribute(let attribute):
@@ -717,23 +644,5 @@ public class SimpleXMLParser: NSObject, XMLParserDelegate {
     
     @objc public func parser(_ parser: XMLParser, parseErrorOccurred parseError: Swift.Error) {
         self.parseError = parseError
-    }
-}
-
-fileprivate func getXMLSubscriptKey(from string: String) -> XMLSubscriptKey? {
-    if string.hasPrefix("#") {
-        if let keyChain = KeyChain(string: string) {
-            return XMLSubscriptKey.keyChain(keyChain)
-        } else {
-            return nil
-        }
-    }
-    else if string.hasPrefix("@") {
-        let index = string.index(string.startIndex, offsetBy: 1)
-        let string = String(string[index...])
-        return XMLSubscriptKey.attribute(string)
-    }
-    else {
-        return XMLSubscriptKey.key(string)
     }
 }

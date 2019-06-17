@@ -15,8 +15,8 @@ let xmlString = """
 """
 
 let xml = XML.init(string: xmlString)
-if let styleData = xml["styleData"].xml {
-    if let xmlList = styleData["aa"]["bb"].xmlList {
+if let styleData = xml.styleData.xml {
+    if let xmlList = styleData.aa.bb.xmlList {
         print("here, \(xmlList)")
     } else {
         print("there")

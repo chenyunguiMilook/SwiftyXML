@@ -66,7 +66,7 @@ public enum XMLSubscriptResult {
                 return .null(path + ": single xml can not subscript by index: \(index)")
             case .array(let xmls, let path):
                 if xmls.indices.contains(index) {
-                    return .xml(xmls[index], path + "[\(index)]")
+                    return .xml(xmls[index], path + ".\(index)")
                 } else {
                     return .null(path + ": index:\(index) out of bounds: \(xmls.indices)")
                 }
@@ -82,12 +82,12 @@ public enum XMLSubscriptResult {
             case .xml(let xml, let path):
                 let array = xml.children.filter{ $0.name == key }
                 if !array.isEmpty {
-                    return .array(array, path + "[\"\(key)\"]")
+                    return .array(array, path + ".\(key)")
                 } else {
                     return .null(path + ": no such children named: \"\(key)\"")
                 }
             case .array(let xmls, let path):
-                let result = XMLSubscriptResult.xml(xmls[0], path + "[0]")
+                let result = XMLSubscriptResult.xml(xmls[0], path + ".0")
                 return subscriptResult(result, byKey: key)
             }
         }
@@ -99,15 +99,15 @@ public enum XMLSubscriptResult {
                 return .null(path + ": attribute can not subscript by attribute: \(attribute)")
             case .xml(let xml, let path):
                 if let attr = xml.attributes[attribute] {
-                    return .string(attr, path + "[\"$\(attribute)\"]")
+                    return .string(attr, path + ".$\(attribute)")
                 } else {
                     return .null(path + ": no such attribute named: \(attribute)")
                 }
             case .array(let xmls, let path):
                 if let attr = xmls[0].attributes[attribute] {
-                    return .string(attr, path + "[0][\"$\(attribute)\"]")
+                    return .string(attr, path + ".0.$\(attribute)")
                 } else {
-                    return .null(path + "[0][\"$\(attribute)\"]" + ": no such attribute named: \(attribute)")
+                    return .null(path + ".0.$\(attribute)" + ": no such attribute named: \(attribute)")
                 }
             }
         }
@@ -265,14 +265,14 @@ open class XML {
         case .key(let key):
             let array = self.children.filter{ $0.name == key }
             if !array.isEmpty {
-                return .array(array, "[\"\(key)\"]")
+                return .array(array, ".\(key)")
             } else {
                 return .null("no such children named: \"\(key)\"")
             }
             
         case .attribute(let attribute):
             if let attr = self.attributes[attribute] {
-                return .string(attr, "[\(attribute)]")
+                return .string(attr, ".$\(attribute)")
             } else {
                 return .null("no such attribute named: \"\(attribute)\"")
             }

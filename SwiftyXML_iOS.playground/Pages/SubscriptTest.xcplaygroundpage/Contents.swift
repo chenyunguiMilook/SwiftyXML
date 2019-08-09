@@ -102,16 +102,17 @@ product1.addAttribute(name: "name", value: "football")
 product1.addAttribute(name: "weight", value: 0.453)
 
 let product2 = XML(name: "product")
-product2.addAttribute(name: "name", value: "basketball")
+product2.addAttribute(name: "name", value: "basketball\"")
 product2.addAttribute(name: "weight", value: 0.654)
+product2.value = "1&2"
 
 store.addChild(product1)
 store.addChild(product2)
 
 print(store.toXMLString())
 
-
-
+let storeXML = XML(string: store.toXMLString())
+print(storeXML.product.1.string!)
 
 
 

@@ -535,7 +535,7 @@ extension XML {
     }
     
     private func getAttributeString() -> String {
-        return self.attributes.map{ " \($0.0)=\"\($0.1)\"" }.joined()
+        return self.attributes.map{ " \($0.0)=\"\($0.1.escaped())\"" }.joined()
     }
     
     private func getStartPart(numTabs:Int) -> String {
@@ -556,7 +556,7 @@ extension XML {
         let tabs = String(repeating: "\t", count: numTabs)
         var valueString: String = ""
         if let v = self.value {
-            valueString = v.trimmingCharacters(in: .whitespacesAndNewlines)
+            valueString = v.trimmingCharacters(in: .whitespacesAndNewlines).escaped()
         }
         if attr.isEmpty {
             switch (closed, self.value) {
@@ -646,3 +646,15 @@ public class SimpleXMLParser: NSObject, XMLParserDelegate {
         self.parseError = parseError
     }
 }
+
+extension String {
+    func escaped() -> String {
+        return self
+            .replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "\"", with: "&quot;")
+            .replacingOccurrences(of: "'", with: "&apos;")
+            .replacingOccurrences(of: ">", with: "&gt;")
+            .replacingOccurrences(of: "<", with: "&lt;")
+    }
+}
+

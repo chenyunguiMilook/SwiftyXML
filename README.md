@@ -110,7 +110,6 @@ github "chenyunguiMilook/SwiftyXML" ~> 3.0.0
 You can use [The Swift Package Manager](https://swift.org/package-manager) to install `SwiftyXML` by adding the proper description to your `Package.swift` file:
 ```swift
 .package(url: "https://github.com/chenyunguiMilook/SwiftyXML.git", from: "3.0.2")
-)
 ```
 
 ## Usage

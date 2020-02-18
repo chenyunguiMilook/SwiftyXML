@@ -552,7 +552,7 @@ extension XML {
     
     private func getDescription(numTabs:Int, closed:Bool) -> String {
         var attr = self.getAttributeString()
-        attr = attr.isEmpty ? "" : attr + " "
+        attr = attr.isEmpty ? "" : attr
         let tabs = String(repeating: "\t", count: numTabs)
         var valueString: String = ""
         if let v = self.value {
@@ -561,7 +561,7 @@ extension XML {
         if attr.isEmpty {
             switch (closed, self.value) {
             case (true,  .some(_)): return tabs + "<\(name)>\(valueString)</\(name)>\n"
-            case (true,  .none):    return tabs + "<\(name) />\n"
+            case (true,  .none):    return tabs + "<\(name)/>\n"
             case (false, .some(_)): return tabs + "<\(name)>\(valueString)\n"
             case (false, .none):    return tabs + "<\(name)>\n"
             }

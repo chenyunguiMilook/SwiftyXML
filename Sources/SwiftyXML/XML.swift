@@ -279,26 +279,34 @@ open class XML {
         }
     }
     
-    public func addAttribute(name:String, value:Any) {
+    @discardableResult
+    public func addAttribute(name:String, value:Any) -> XML {
         self.attributes[name] = String(describing: value)
+        return self
     }
     
-    public func addAttributes(_ attributes:[String : Any]) {
+    @discardableResult
+    public func addAttributes(_ attributes:[String : Any]) -> XML {
         for (key, value) in attributes {
             self.addAttribute(name: key, value: value)
         }
+        return self
     }
     
-    public func addChild(_ xml:XML) {
+    @discardableResult
+    public func addChild(_ xml:XML) -> XML {
         guard xml !== self else {
             fatalError("can not add self to xml children list!")
         }
         children.append(xml)
         xml.parent = self
+        return self
     }
     
-    public func addChildren(_ xmls: [XML]) {
+    @discardableResult
+    public func addChildren(_ xmls: [XML]) -> XML {
         xmls.forEach{ self.addChild($0) }
+        return self
     }
 }
 

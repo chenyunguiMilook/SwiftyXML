@@ -180,11 +180,25 @@ public enum XMLSubscriptResult {
 @dynamicMemberLookup
 open class XML {
     
-    public var name:String
-    public var attributes:[String: String] = [:]
-    public var value:String?
-    public internal(set) var children:[XML] = []
+    fileprivate var name:String
+    fileprivate var attributes:[String: String] = [:]
+    fileprivate var value:String?
+    fileprivate var children:[XML] = []
     
+    public var xmlName:String {
+        get { name }
+        set { name = newValue }
+    }
+    public var xmlAttributes:[String: String] {
+        get { attributes }
+        set { attributes = newValue }
+    }
+    public var xmlValue:String? {
+        get { value }
+        set { value = newValue }
+    }
+    public var xmlChildren:[XML] { children }
+
     internal weak var parent:XML?
     
     public init(name:String, attributes:[String:Any] = [:], value: Any? = nil) {

@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name        = "SwiftyXML"
-  s.version     = "3.0.4"
+  s.version     = "3.1.0"
   s.summary     = "The most swifty way to deal with XML data in swift 5"
   s.homepage    = "https://github.com/chenyunguiMilook/SwiftyXML"
   s.license     = { :type => "MIT" }

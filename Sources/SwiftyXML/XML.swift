@@ -215,45 +215,35 @@ open class XML {
         self.parent = nil
     }
     
-    public convenience init!(data: Data) {
-        do {
-            let parser = SimpleXMLParser(data: data)
-            try parser.parse()
-            if let xml = parser.root {
-                self.init(xml: xml)
-            } else {
-                fatalError("xml parser exception")
-            }
-        } catch {
-            print(error.localizedDescription)
-            return nil
+    public convenience init(data: Data) throws {
+        let parser = SimpleXMLParser(data: data)
+        try parser.parse()
+        if let xml = parser.root {
+            self.init(xml: xml)
+        } else {
+            throw XMLError.initFailue("xml parser exception")
         }
     }
     
-    public convenience init!(url: URL) {
-        do {
-            let data = try Data(contentsOf: url)
-            self.init(data: data)
-        } catch {
-            print(error.localizedDescription)
-            return nil
-        }
+    public convenience init(url: URL) throws {
+        let data = try Data(contentsOf: url)
+        try self.init(data: data)
     }
     
-    public convenience init(named name: String) {
+    public convenience init(named name: String) throws {
         guard let url = Bundle.main.resourceURL?.appendingPathComponent(name) else {
-            fatalError("can not get mainBundle URL")
+            throw XMLError.initFailue("can not get mainBundle URL")
         }
-        self.init(url: url)
+        try self.init(url: url)
     }
-    
-    public convenience init(string: String, encoding: String.Encoding = .utf8) {
+
+    public convenience init(string: String, encoding: String.Encoding = .utf8) throws {
         guard let data = string.data(using: encoding) else {
-            fatalError("string encoding failed")
+            throw XMLError.initFailue("string encoding failed")
         }
-        self.init(data: data)
+        try self.init(data: data)
     }
-    
+
     public subscript(dynamicMember member: String) -> XMLSubscriptResult {
         if let index = Int(member) {
             return self[XMLSubscriptKey.index(index)]
@@ -536,12 +526,13 @@ extension XML {
     }
     
     public func toXMLString() -> String {
+        let meta = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
         var result = ""
-        var depth:Int = 0
+        var depth: Int = 0
         describe(xml: self, depth: &depth, result: &result)
-        return result
+        return meta + "\n" + result
     }
-    
+
     private func describe(xml: XML, depth:inout Int, result: inout String) {
         if xml.children.isEmpty {
             result += xml.getCombine(numTabs: depth)

@@ -1,10 +1,14 @@
-// swift-tools-version:5.1
+// swift-tools-version: 6.0
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
     name: "SwiftyXML",
+    platforms: [
+        .iOS(.v17),
+        .macCatalyst(.v17)
+    ],
     products: [
         // Products define the executables and libraries produced by a package, and make them visible to other packages.
         .library(

@@ -78,8 +78,21 @@ if let color1 = xml.product.catalog_item.wrong_size.wrong_color.1.xml {
 
 ## Requirements
 
-- iOS 8.0+ | macOS 10.10+ | tvOS 9.0+ | watchOS 2.0+
-- Xcode 8
+- iOS 17.0+ | macOS 14.0+ | tvOS 17.0+ | watchOS 10.0+
+- Xcode 16.2
+
+## Build & Test
+
+### Swift Package Manager
+```bash
+swift build
+swift test
+```
+
+### Mac Catalyst 17
+```bash
+xcodebuild -scheme SwiftyXML -destination "generic/platform=macOS,variant=Mac Catalyst" build
+```
 
 ## Installation
 
@@ -199,5 +212,16 @@ print(store.toXMLString())
 	<product name="basketball" weight="0.654" />
 </store>
 ```
+
+## 构建与测试
+
+### 核心命令
+- **标准构建**: `swift build`
+- **Mac Catalyst 17**:
+  ```bash
+  xcodebuild -scheme SwiftyXML -destination "generic/platform=macOS,variant=Mac Catalyst" build
+  ```
+- **运行测试**: `swift test`
+
 
 
